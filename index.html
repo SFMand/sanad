@@ -5,6 +5,11 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>CS Course Planner — KSU CCIS</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%230E1116'/%3E%3Cg fill='none' stroke='%235EEAD4' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z'/%3E%3Cpath d='M22 10v5'/%3E%3Cpath d='M6 12.5V16a6 3 0 0 0 12 0v-3.5'/%3E%3C/g%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" />
   <style>
     :root {
       --bg: #0E1116;
@@ -24,8 +29,43 @@
       --bubble-user: var(--primary);
       --bubble-bot: var(--raised);
       --danger: #F87171;
-      --radius: 12px;
+
+      /* Type */
+      --font-head: "Space Grotesk", "IBM Plex Sans Arabic", "Noto Sans Arabic", system-ui, sans-serif;
+      --font-body: "Inter", "IBM Plex Sans Arabic", "Noto Sans Arabic", "Segoe UI", system-ui, sans-serif;
+      --fs-xs: .72rem;
+      --fs-sm: .82rem;
+      --fs-base: .94rem;
+      --fs-md: 1.05rem;
+      --fs-lg: 1.3rem;
+      --fs-xl: 1.7rem;
+      --lh-tight: 1.2;
+      --lh-body: 1.55;
+
+      /* Spacing (8px scale) */
+      --sp-1: 4px;
+      --sp-2: 8px;
+      --sp-3: 12px;
+      --sp-4: 16px;
+      --sp-5: 20px;
+      --sp-6: 24px;
+      --sp-8: 32px;
+      --sp-10: 40px;
+
+      /* Radius */
+      --r-sm: 8px;
+      --r-md: 12px;
+      --r-lg: 16px;
+      --r-pill: 999px;
+      --radius: var(--r-md);
+
+      /* Elevation */
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, .3);
       --shadow: 0 1px 3px rgba(0, 0, 0, .35), 0 6px 20px rgba(0, 0, 0, .25);
+
+      /* Motion */
+      --ease: cubic-bezier(.4, 0, .2, 1);
+      --dur: .18s;
     }
 
     * {
@@ -39,11 +79,13 @@
 
     body {
       margin: 0;
-      font-family: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial,
-        "Noto Sans Arabic", "Tahoma", sans-serif;
+      font-family: var(--font-body);
+      font-size: var(--fs-base);
       color: var(--ink);
       background: var(--bg);
-      line-height: 1.5;
+      line-height: var(--lh-body);
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
       display: flex;
       flex-direction: column;
     }
@@ -52,7 +94,9 @@
     h2,
     h3 {
       margin: 0;
-      line-height: 1.25;
+      font-family: var(--font-head);
+      line-height: var(--lh-tight);
+      letter-spacing: -.01em;
     }
 
     button {
@@ -72,6 +116,16 @@
       border: 0;
     }
 
+    /* Inline icons (Lucide). Scale with font-size; inherit color via currentColor. */
+    .ic {
+      width: 1em;
+      height: 1em;
+      display: inline-block;
+      vertical-align: -.14em;
+      flex: none;
+      stroke: currentColor;
+    }
+
     /* ---------- Header ---------- */
     header {
       background: var(--panel);
@@ -85,16 +139,39 @@
 
     .brand {
       margin-inline-end: auto;
+      display: flex;
+      align-items: center;
+      gap: var(--sp-3);
+    }
+
+    .brand-mark {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      flex: none;
+      border-radius: var(--r-sm);
+      background: linear-gradient(135deg, rgba(94, 234, 212, .18), rgba(245, 166, 35, .14));
+      border: 1px solid var(--line);
+      color: var(--primary);
+    }
+
+    .brand-mark .ic {
+      width: 24px;
+      height: 24px;
     }
 
     .brand h1 {
-      font-size: clamp(1.1rem, 2.4vw, 1.5rem);
+      font-size: clamp(1.15rem, 2.4vw, 1.55rem);
+      font-weight: 600;
+      letter-spacing: -.02em;
     }
 
     .brand p {
-      margin: 2px 0 0;
+      margin: var(--sp-1) 0 0;
       color: var(--muted);
-      font-size: .85rem;
+      font-size: var(--fs-sm);
     }
 
     .progress {
@@ -119,7 +196,7 @@
     .progress-bar {
       height: 10px;
       background: var(--line);
-      border-radius: 999px;
+      border-radius: var(--r-pill);
       overflow: hidden;
     }
 
@@ -127,29 +204,47 @@
       height: 100%;
       width: 0%;
       background: linear-gradient(90deg, var(--accent), var(--primary));
-      border-radius: 999px;
+      border-radius: var(--r-pill);
       transition: width .4s ease;
     }
 
     .seg-toggle {
       display: inline-flex;
       border: 1px solid var(--line);
-      border-radius: 999px;
+      border-radius: var(--r-pill);
       overflow: hidden;
       background: var(--bg);
     }
 
     .seg-toggle button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--sp-2);
       border: 0;
       background: transparent;
       padding: 7px 16px;
       color: var(--muted);
       font-weight: 600;
       min-width: 48px;
+      transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+    }
+
+    .seg-toggle button .ic {
+      width: 16px;
+      height: 16px;
+    }
+
+    .seg-toggle button:hover {
+      color: var(--ink);
     }
 
     .seg-toggle button[aria-pressed="true"] {
       background: var(--primary);
+      color: var(--primary-ink);
+    }
+
+    .seg-toggle button[aria-pressed="true"]:hover {
       color: var(--primary-ink);
     }
 
@@ -158,8 +253,8 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 12px;
-      padding: 16px clamp(12px, 3vw, 28px);
+      gap: var(--sp-3);
+      padding: var(--sp-4) clamp(12px, 3vw, 28px);
       min-height: 0;
     }
 
@@ -202,7 +297,8 @@
     }
 
     .panel-head h2 {
-      font-size: 1rem;
+      font-size: var(--fs-md);
+      font-weight: 600;
     }
 
     .panel-head p {
@@ -248,18 +344,30 @@
       padding: 9px 12px;
       font: inherit;
       border: 1px solid var(--line);
-      border-radius: 10px;
+      border-radius: var(--r-sm);
       background: var(--panel);
       color: var(--ink);
     }
 
     .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--sp-2);
       border: 1px solid var(--line);
       background: var(--panel);
       color: var(--ink);
       padding: 9px 14px;
-      border-radius: 10px;
+      border-radius: var(--r-sm);
       font-weight: 600;
+      transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease), transform var(--dur) var(--ease), filter var(--dur) var(--ease);
+    }
+
+    .btn:hover {
+      border-color: var(--muted);
+    }
+
+    .btn:active {
+      transform: translateY(1px);
     }
 
     .btn.primary {
@@ -274,8 +382,22 @@
       border-color: var(--accent);
     }
 
+    .btn.primary:hover,
+    .btn.accent:hover {
+      filter: brightness(1.08);
+    }
+
     .btn.ghost {
       background: transparent;
+    }
+
+    .btn.ghost:hover {
+      background: var(--raised);
+    }
+
+    .btn .ic {
+      width: 16px;
+      height: 16px;
     }
 
     .electives {
@@ -300,7 +422,7 @@
     .elective-item .ebar {
       height: 6px;
       background: var(--line);
-      border-radius: 999px;
+      border-radius: var(--r-pill);
       overflow: hidden;
       margin-top: 3px;
     }
@@ -308,7 +430,7 @@
     .elective-item .efill {
       height: 100%;
       background: var(--accent);
-      border-radius: 999px;
+      border-radius: var(--r-pill);
     }
 
     .elective-item.done .efill {
@@ -324,7 +446,7 @@
     .elective-options {
       margin: 2px 0 14px;
       border: 1px solid var(--line);
-      border-radius: 10px;
+      border-radius: var(--r-sm);
       padding: 2px 6px;
     }
 
@@ -334,6 +456,47 @@
       overflow-y: auto;
       padding: 4px 16px 16px;
       min-height: 0;
+    }
+
+    /* ---------- Loading skeleton ---------- */
+    .skeleton-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: var(--sp-3);
+    }
+
+    .skel-card {
+      border: 1px solid var(--line);
+      border-radius: var(--r-md);
+      background: var(--raised);
+      padding: var(--sp-3);
+    }
+
+    .skel {
+      border-radius: var(--r-sm);
+      background: linear-gradient(100deg, var(--line) 30%, rgba(138, 147, 166, .22) 50%, var(--line) 70%);
+      background-size: 220% 100%;
+      animation: shimmer 1.4s ease-in-out infinite;
+    }
+
+    .skel-line {
+      height: 11px;
+      margin-bottom: 9px;
+    }
+
+    .skel-cell {
+      height: 44px;
+      margin-bottom: 8px;
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: 180% 0;
+      }
+
+      100% {
+        background-position: -80% 0;
+      }
     }
 
     .legend {
@@ -377,10 +540,12 @@
     }
 
     .year-label {
-      font-size: .85rem;
-      font-weight: 700;
+      font-family: var(--font-head);
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: -.01em;
       color: var(--ink);
-      margin-bottom: 7px;
+      margin-bottom: var(--sp-2);
     }
 
     .semesters {
@@ -391,9 +556,10 @@
 
     .semester {
       border: 1px solid var(--line);
-      border-radius: 10px;
-      padding: 9px;
+      border-radius: var(--r-md);
+      padding: var(--sp-3);
       background: var(--raised);
+      box-shadow: var(--shadow-sm);
       min-width: 0;
     }
 
@@ -422,15 +588,18 @@
       font: inherit;
       color: var(--ink);
       border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 7px 9px;
+      border-radius: var(--r-sm);
+      padding: var(--sp-2) var(--sp-3);
       background: #20262F;
       cursor: pointer;
-      transition: box-shadow .15s ease;
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow var(--dur) var(--ease), border-color var(--dur) var(--ease), transform var(--dur) var(--ease);
     }
 
     .cell:hover {
       box-shadow: var(--shadow);
+      border-color: var(--primary);
+      transform: translateY(-1px);
     }
 
     .cell-top {
@@ -465,11 +634,6 @@
       border-color: rgba(74, 222, 128, .4);
     }
 
-    .cell.completed .cell-code::before {
-      content: "✓ ";
-      color: var(--eligible);
-    }
-
     .cell.eligible {
       background: rgba(94, 234, 212, .1);
       border-color: rgba(94, 234, 212, .35);
@@ -480,9 +644,23 @@
       border-color: var(--line);
     }
 
-    .cell.locked .cell-code::before {
-      content: "🔒 ";
-      font-size: .8em;
+    .cell-code {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .cell-code .state-ic {
+      width: 13px;
+      height: 13px;
+    }
+
+    .cell.completed .state-ic {
+      color: var(--eligible);
+    }
+
+    .cell.locked .state-ic {
+      color: var(--muted);
     }
 
     .cell .blockers {
@@ -526,13 +704,26 @@
       background: rgba(74, 222, 128, .1);
       color: var(--ink);
       padding: 4px 10px;
-      border-radius: 999px;
+      border-radius: var(--r-pill);
       cursor: pointer;
+      transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease);
+    }
+
+    .ochip:hover {
+      border-color: var(--danger);
+      background: rgba(248, 113, 113, .1);
     }
 
     .ochip .x {
       color: var(--muted);
       font-weight: 700;
+      display: inline-flex;
+      transition: color var(--dur) var(--ease);
+    }
+
+    .ochip .x .ic {
+      width: 13px;
+      height: 13px;
     }
 
     .ochip:hover .x {
@@ -544,7 +735,7 @@
       font-size: .66rem;
       font-weight: 700;
       padding: 1px 7px;
-      border-radius: 999px;
+      border-radius: var(--r-pill);
       margin-inline-start: 6px;
       vertical-align: middle;
     }
@@ -569,12 +760,13 @@
       align-items: flex-start;
       gap: 10px;
       padding: 7px 8px;
-      border-radius: 8px;
+      border-radius: var(--r-sm);
       cursor: pointer;
+      transition: background var(--dur) var(--ease);
     }
 
     .course:hover {
-      background: var(--bg);
+      background: var(--raised);
     }
 
     .course input {
@@ -622,7 +814,7 @@
     .rec-card {
       border: 1px solid rgba(94, 234, 212, .35);
       background: rgba(94, 234, 212, .08);
-      border-radius: 12px;
+      border-radius: var(--r-md);
       padding: 9px 12px;
       min-width: 150px;
       max-width: 230px;
@@ -630,11 +822,14 @@
       text-align: start;
       font: inherit;
       color: var(--ink);
-      transition: box-shadow .15s ease;
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow var(--dur) var(--ease), border-color var(--dur) var(--ease), transform var(--dur) var(--ease);
     }
 
     .rec-card:hover {
       box-shadow: var(--shadow);
+      border-color: var(--primary);
+      transform: translateY(-1px);
     }
 
     .rec-card .rc-top {
@@ -661,16 +856,33 @@
     }
 
     .rec-card .rc-foot {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 5px;
       font-size: .72rem;
       color: var(--eligible);
       font-weight: 600;
     }
 
+    .rec-card .rc-foot .foot-ic {
+      width: 13px;
+      height: 13px;
+    }
+
     .rec-card .rc-caveat {
-      display: block;
+      flex-basis: 100%;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
       color: var(--warn);
       font-weight: 600;
       margin-top: 3px;
+    }
+
+    .rec-card .rc-caveat .cav-ic {
+      width: 12px;
+      height: 12px;
     }
 
     .rec-card.added {
@@ -681,9 +893,10 @@
     /* ---------- Transcript review ---------- */
     .review {
       border: 1px solid var(--line);
-      border-radius: 10px;
+      border-radius: var(--r-md);
       margin: 0 16px 10px;
       background: var(--raised);
+      box-shadow: var(--shadow-sm);
       overflow: hidden;
     }
 
@@ -725,10 +938,54 @@
       gap: 12px;
     }
 
+    .empty-state {
+      margin: auto;
+      max-width: 440px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--sp-3);
+      padding: var(--sp-6) var(--sp-4);
+      color: var(--muted);
+    }
+
+    .empty-state .empty-ic {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 56px;
+      height: 56px;
+      border-radius: var(--r-md);
+      background: linear-gradient(135deg, rgba(94, 234, 212, .16), rgba(245, 166, 35, .12));
+      border: 1px solid var(--line);
+      color: var(--primary);
+    }
+
+    .empty-state .empty-ic .ic {
+      width: 28px;
+      height: 28px;
+    }
+
+    .empty-state .empty-title {
+      margin: 0;
+      font-family: var(--font-head);
+      font-size: var(--fs-md);
+      font-weight: 600;
+      letter-spacing: -.01em;
+      color: var(--ink);
+    }
+
+    .empty-state .empty-text {
+      margin: 0;
+      font-size: var(--fs-sm);
+      line-height: 1.55;
+    }
+
     .msg {
       max-width: 78%;
       padding: 10px 14px;
-      border-radius: 14px;
+      border-radius: var(--r-md);
       word-wrap: break-word;
       overflow-wrap: anywhere;
       font-size: .94rem;
@@ -837,7 +1094,7 @@
     .msg.bot pre {
       margin: .55em 0;
       padding: 10px 12px;
-      border-radius: 8px;
+      border-radius: var(--r-sm);
       background: #0A0D12;
       color: var(--ink);
       overflow-x: auto;
@@ -908,13 +1165,15 @@
       background: var(--bg);
       color: var(--primary);
       padding: 7px 12px;
-      border-radius: 999px;
+      border-radius: var(--r-pill);
       font-size: .85rem;
       font-weight: 600;
+      transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease);
     }
 
     .chip:hover {
       background: rgba(94, 234, 212, .12);
+      border-color: var(--primary);
     }
 
     .chat-form {
@@ -932,7 +1191,7 @@
       padding: 11px 12px;
       font: inherit;
       border: 1px solid var(--line);
-      border-radius: 10px;
+      border-radius: var(--r-sm);
       color: var(--ink);
       background: var(--panel);
     }
@@ -953,7 +1212,7 @@
       background: var(--warn-bg);
       border: 1px solid rgba(245, 166, 35, .4);
       padding: 8px 12px;
-      border-radius: 10px;
+      border-radius: var(--r-sm);
       text-align: center;
     }
 
@@ -988,8 +1247,11 @@
 <body>
   <header>
     <div class="brand">
-      <h1 id="appTitle">CS Course Planner</h1>
-      <p id="appSubtitle">BSc Computer Science · KSU CCIS advising assistant</p>
+      <span class="brand-mark" id="brandMark" aria-hidden="true"></span>
+      <div class="brand-text">
+        <h1 id="appTitle">CS Course Planner</h1>
+        <p id="appSubtitle">BSc Computer Science · KSU CCIS advising assistant</p>
+      </div>
     </div>
     <div class="progress" aria-live="polite">
       <div class="progress-top">
@@ -1008,9 +1270,9 @@
 
   <main>
     <div class="seg-toggle viewtabs" id="viewTabs" role="tablist" aria-label="View">
-      <button id="tabPlan" data-view="plan" role="tab" aria-selected="true" aria-pressed="true">📅 Plan</button>
-      <button id="tabAdvisor" data-view="advisor" role="tab" aria-selected="false" aria-pressed="false">💬
-        Advisor</button>
+      <button id="tabPlan" data-view="plan" role="tab" aria-selected="true" aria-pressed="true">Plan</button>
+      <button id="tabAdvisor" data-view="advisor" role="tab" aria-selected="false"
+        aria-pressed="false">Advisor</button>
     </div>
 
     <div class="views">
@@ -1074,6 +1336,34 @@
   <script>
     "use strict";
 
+    // ---- Inline icons (Lucide path data) -------------------------------------
+    // Dependency-free: no runtime, no CDN. icon(name) returns an <svg> string;
+    // iconEl(name) returns a detached node for DOM-building code.
+    const ICON_PATHS = {
+      "graduation-cap": '<path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/>',
+      "calendar": '<path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/>',
+      "message-circle": '<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>',
+      "check": '<path d="M20 6 9 17l-5-5"/>',
+      "lock": '<rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+      "x": '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+      "upload": '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/>',
+      "send": '<line x1="22" x2="11" y1="2" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>',
+      "alert-triangle": '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
+      "sparkles": '<path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .962 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.962 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/>'
+    };
+    function icon(name, cls) {
+      const p = ICON_PATHS[name] || "";
+      return '<svg class="ic' + (cls ? " " + cls : "") + '" viewBox="0 0 24 24" fill="none" ' +
+        'stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ' +
+        'aria-hidden="true">' + p + '</svg>';
+    }
+    function iconEl(name, cls) {
+      const span = document.createElement("span");
+      span.style.display = "inline-flex";
+      span.innerHTML = icon(name, cls);
+      return span.firstChild;
+    }
+
     // ---- Bilingual copy -------------------------------------------------------
     const STRINGS = {
       en: {
@@ -1105,9 +1395,9 @@
         coreqPrefix: "co-req ",
         creditGap: (n) => `+${n} cr needed`,
         recLabel: "Recommended (eligible now)",
-        recEligible: "✓ eligible now",
+        recEligible: "eligible now",
         markDone: "tap to mark done",
-        added: "✓ marked done",
+        added: "marked done",
         levelLabel: "Level",
         electivesTitle: "Track electives",
         electiveProgress: (g, done, total) => `${g}: ${done} of ${total} credits done`,
@@ -1123,6 +1413,7 @@
         uploading: "Parsing transcript…",
         uploadFailed: "Couldn't parse the transcript: ",
         thinking: "Thinking…",
+        welcomeTitle: "Let's plan your degree",
         welcome: "Choose your track, upload your transcript (or tick courses) on the left, then ask me what to take next, whether you can take a specific course, or what's left before you graduate.",
         errorPrefix: "Couldn't reach the assistant: ",
         disclaimer: "Planning aid only — not a substitute for your official KSU academic advisor. Some seed data is unverified; confirm it against the official CS study plan.",
@@ -1161,9 +1452,9 @@
         coreqPrefix: "مرافق ",
         creditGap: (n) => `يلزم +${n} ساعة`,
         recLabel: "مقترحة (متاحة الآن)",
-        recEligible: "✓ متاح الآن",
+        recEligible: "متاح الآن",
         markDone: "انقر للتمييز كمُنجز",
-        added: "✓ تم التمييز كمُنجز",
+        added: "تم التمييز كمُنجز",
         levelLabel: "المستوى",
         electivesTitle: "مقررات المسار الاختيارية",
         electiveProgress: (g, done, total) => `${g}: ${done} من ${total} ساعة منجزة`,
@@ -1179,6 +1470,7 @@
         uploading: "جارٍ تحليل السجل…",
         uploadFailed: "تعذّر تحليل السجل: ",
         thinking: "جارٍ التفكير…",
+        welcomeTitle: "لنُخطّط لدراستك",
         welcome: "اختر مسارك، وارفع سجلك الأكاديمي (أو حدِّد المقررات) من القائمة، ثم اسألني عمّا يمكنك تسجيله، أو هل يمكنك أخذ مقرر معيّن، أو ماذا تبقّى حتى التخرج.",
         errorPrefix: "تعذّر الوصول إلى المساعد: ",
         disclaimer: "أداة تخطيط فقط — لا تُغني عن المرشد الأكاديمي الرسمي بجامعة الملك سعود. بعض البيانات الأولية غير مؤكدة؛ تأكّد منها وفق الخطة الدراسية الرسمية لعلوم الحاسب.",
@@ -1255,31 +1547,42 @@
       return names[track] || track;
     }
 
+    // Set a button/tab's content to an inline icon followed by its label.
+    function labelWithIcon(id, name, text) {
+      const el = $(id);
+      el.textContent = "";
+      el.appendChild(iconEl(name));
+      const span = document.createElement("span");
+      span.textContent = text;
+      el.appendChild(span);
+    }
+
     function applyLang() {
       const s = t();
       document.documentElement.lang = state.lang;
       document.documentElement.dir = s.dir;
+      $("brandMark").innerHTML = icon("graduation-cap");
       $("appTitle").textContent = s.appTitle;
       $("appSubtitle").textContent = s.appSubtitle;
       $("progressLabel").textContent = s.progressLabel;
       $("coursesHeading").textContent = s.coursesHeading;
       $("coursesHelp").textContent = s.coursesHelp;
       $("trackLabel").textContent = s.trackLabel;
-      $("uploadBtn").textContent = s.uploadBtn;
+      labelWithIcon("uploadBtn", "upload", s.uploadBtn);
       $("pasteInput").placeholder = s.pastePlaceholder;
       $("pasteBtn").textContent = s.pasteBtn;
       $("demoBtn").textContent = s.demoBtn;
       $("clearBtn").textContent = s.clearBtn;
       $("chatInput").placeholder = s.chatPlaceholder;
-      $("sendBtn").textContent = s.sendBtn;
+      labelWithIcon("sendBtn", "send", s.sendBtn);
       $("reviewTitle").textContent = s.reviewTitle;
       $("reviewHelp").textContent = s.reviewHelp;
       $("reviewConfirm").textContent = s.reviewConfirm;
       $("reviewCancel").textContent = s.reviewCancel;
       $("disclaimer").textContent = s.disclaimer;
       $("pasteBtn").textContent = s.pasteBtn;
-      $("tabPlan").textContent = s.tabPlan;
-      $("tabAdvisor").textContent = s.tabAdvisor;
+      labelWithIcon("tabPlan", "calendar", s.tabPlan);
+      labelWithIcon("tabAdvisor", "message-circle", s.tabAdvisor);
       $("langEn").setAttribute("aria-pressed", String(state.lang === "en"));
       $("langAr").setAttribute("aria-pressed", String(state.lang === "ar"));
       renderTrackToggle();
@@ -1395,6 +1698,11 @@
       const code = document.createElement("span");
       code.className = "cell-code";
       code.textContent = course.code;
+      if (course.state === "completed") {
+        code.insertBefore(iconEl("check", "state-ic"), code.firstChild);
+      } else if (course.state === "locked") {
+        code.insertBefore(iconEl("lock", "state-ic"), code.firstChild);
+      }
       if (!course.verified) {
         const uv = document.createElement("span");
         uv.className = "badge unverified";
@@ -1443,16 +1751,36 @@
         });
     }
 
+    // Shimmer placeholder shown while the engine computes the first /plan result.
+    function makeSkeleton(label) {
+      const wrap = document.createElement("div");
+      wrap.className = "skeleton-grid";
+      wrap.setAttribute("role", "status");
+      wrap.setAttribute("aria-label", label);
+      for (let i = 0; i < 3; i++) {
+        const card = document.createElement("div");
+        card.className = "skel-card";
+        const head = document.createElement("div");
+        head.className = "skel skel-line";
+        head.style.width = "55%";
+        card.appendChild(head);
+        for (let j = 0; j < 4; j++) {
+          const cell = document.createElement("div");
+          cell.className = "skel skel-cell";
+          card.appendChild(cell);
+        }
+        wrap.appendChild(card);
+      }
+      return wrap;
+    }
+
     function renderPlan() {
       const s = t();
       renderLegend();
       const grid = $("planGrid");
       grid.textContent = "";
       if (!state.plan || !state.plan.years) {
-        const p = document.createElement("p");
-        p.style.color = "var(--muted)"; p.style.fontSize = ".85rem";
-        p.textContent = s.planLoading;
-        grid.appendChild(p);
+        grid.appendChild(makeSkeleton(s.planLoading));
         renderOtherCompleted();
         return;
       }
@@ -1511,7 +1839,7 @@
         const code = document.createElement("span");
         code.textContent = `${c.code} · ${c.credits} ${s.crSuffix}`;
         const x = document.createElement("span");
-        x.className = "x"; x.textContent = "✕";
+        x.className = "x"; x.appendChild(iconEl("x"));
         chip.appendChild(code); chip.appendChild(x);
         chip.addEventListener("click", () => toggleCompleted(c.code, false));
         row.appendChild(chip);
@@ -1688,8 +2016,24 @@
     }
 
     function renderWelcome() {
-      $("chat").textContent = "";
-      addMessage("system", t().welcome);
+      const s = t();
+      const chat = $("chat");
+      chat.textContent = "";
+      const empty = document.createElement("div");
+      empty.className = "empty-state";
+      const ic = document.createElement("span");
+      ic.className = "empty-ic";
+      ic.innerHTML = icon("sparkles");
+      const title = document.createElement("p");
+      title.className = "empty-title";
+      title.textContent = s.welcomeTitle;
+      const text = document.createElement("p");
+      text.className = "empty-text";
+      text.textContent = s.welcome;
+      empty.appendChild(ic);
+      empty.appendChild(title);
+      empty.appendChild(text);
+      chat.appendChild(empty);
     }
 
     // ---- Transcript upload + review ------------------------------------------
@@ -1876,10 +2220,17 @@
 
       const foot = document.createElement("div");
       foot.className = "rc-foot";
-      foot.textContent = state.completed.has(code) ? s.added : s.recEligible;
+      foot.appendChild(iconEl("check", "foot-ic"));
+      const footTxt = document.createElement("span");
+      footTxt.textContent = state.completed.has(code) ? s.added : s.recEligible;
+      foot.appendChild(footTxt);
       if (!c.verified) {
         const cav = document.createElement("span");
-        cav.className = "rc-caveat"; cav.textContent = "⚠ " + s.unverified;
+        cav.className = "rc-caveat";
+        cav.appendChild(iconEl("alert-triangle", "cav-ic"));
+        const cavTxt = document.createElement("span");
+        cavTxt.textContent = s.unverified;
+        cav.appendChild(cavTxt);
         foot.appendChild(cav);
       }
 
