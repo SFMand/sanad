@@ -1,0 +1,1819 @@
+{
+  "program": {
+    "name_en": "BSc in Computer Science",
+    "name_ar": "بكالوريوس علوم الحاسب",
+    "college": "College of Computer and Information Sciences (CCIS), King Saud University",
+    "total_credits_required": 128,
+    "tracks": [
+      "general",
+      "ai",
+      "cyber"
+    ],
+    "track_names_ar": {
+      "general": "المسار العام",
+      "ai": "مسار الذكاء الاصطناعي",
+      "cyber": "مسار الشبكات والأمن السيبراني"
+    }
+  },
+  "courses": [
+    {
+      "code": "انجل 100",
+      "code_en": "ENGL 100",
+      "title_ar": "اللغة الإنجليزية",
+      "title_en": "English Language",
+      "credits": 6,
+      "category": "prep",
+      "requirements": {
+        "courses": [],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عرب 100",
+      "code_en": "ARAB 100",
+      "title_ar": "مهارات الكتابة",
+      "title_en": "Writing Skills",
+      "credits": 2,
+      "category": "prep",
+      "requirements": {
+        "courses": [],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "احص 101",
+      "code_en": "STAT 101",
+      "title_ar": "مدخل إلى الاحتمالات والإحصاء",
+      "title_en": "Intro to Probability & Statistics",
+      "credits": 3,
+      "category": "prep",
+      "requirements": {
+        "courses": [],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "ريد 101",
+      "code_en": "ENT 101",
+      "title_ar": "ريادة الأعمال",
+      "title_en": "Entrepreneurship",
+      "credits": 1,
+      "category": "prep",
+      "requirements": {
+        "courses": [],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "كيم 101",
+      "code_en": "CHEM 101",
+      "title_ar": "كيمياء عامة",
+      "title_en": "General Chemistry",
+      "credits": 4,
+      "category": "prep",
+      "requirements": {
+        "courses": [],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "انجل 110",
+      "code_en": "ENGL 110",
+      "title_ar": "لغة إنجليزية تخصصية",
+      "title_en": "Specialized English",
+      "credits": 6,
+      "category": "prep",
+      "requirements": {
+        "courses": [
+          "انجل 100"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "نهج 101",
+      "code_en": "CI 101",
+      "title_ar": "مهارات جامعية",
+      "title_en": "University Skills",
+      "credits": 3,
+      "category": "prep",
+      "requirements": {
+        "courses": [],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "فجب 101",
+      "code_en": "PE 101",
+      "title_ar": "اللياقة والثقافة الصحية",
+      "title_en": "Fitness & Health Culture",
+      "credits": 1,
+      "category": "prep",
+      "requirements": {
+        "courses": [],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "ريض 101",
+      "code_en": "MATH 101",
+      "title_ar": "حساب التفاضل",
+      "title_en": "Differential Calculus",
+      "credits": 3,
+      "category": "prep",
+      "requirements": {
+        "courses": [],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "تقن 101",
+      "code_en": "CT 101",
+      "title_ar": "مهارات الحاسب الآلي والذكاء الاصطناعي",
+      "title_en": "Computer & AI Skills",
+      "credits": 3,
+      "category": "prep",
+      "requirements": {
+        "courses": [],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "ريض 151",
+      "code_en": "MATH 151",
+      "title_ar": "الرياضيات المحددة",
+      "title_en": "Finite Mathematics",
+      "credits": 3,
+      "category": "core",
+      "requirements": {
+        "courses": [
+          "ريض 101"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "ريض 106",
+      "code_en": "MATH 106",
+      "title_ar": "حساب التكامل",
+      "title_en": "Integral Calculus",
+      "credits": 3,
+      "category": "core",
+      "requirements": {
+        "courses": [
+          "ريض 101"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "ريض 244",
+      "code_en": "MATH 244",
+      "title_ar": "الجبر الخطي",
+      "title_en": "Linear Algebra",
+      "credits": 3,
+      "category": "core",
+      "requirements": {
+        "courses": [
+          "ريض 106"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "سلم 107",
+      "code_en": "IC 107",
+      "title_ar": "أخلاقيات المهنة",
+      "title_en": "Professional Ethics",
+      "credits": 2,
+      "category": "core",
+      "requirements": {
+        "courses": [],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "سلم 108",
+      "code_en": "IC 108",
+      "title_ar": "قضايا معاصرة",
+      "title_en": "Contemporary Issues",
+      "credits": 2,
+      "category": "core",
+      "requirements": {
+        "courses": [],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 111",
+      "code_en": "CSC 111",
+      "title_ar": "برمجة حاسبات 1",
+      "title_en": "Computer Programming 1",
+      "credits": 4,
+      "category": "core",
+      "requirements": {
+        "courses": [
+          "تقن 101"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 113",
+      "code_en": "CSC 113",
+      "title_ar": "برمجة حاسبات 2",
+      "title_en": "Computer Programming 2",
+      "credits": 4,
+      "category": "core",
+      "requirements": {
+        "courses": [
+          "عال 111"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 220",
+      "code_en": "CSC 220",
+      "title_ar": "تنظيم الحاسبات",
+      "title_en": "Computer Organization",
+      "credits": 3,
+      "category": "core",
+      "requirements": {
+        "courses": [
+          "ريض 151"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 281",
+      "code_en": "CSC 281",
+      "title_ar": "الرياضيات المتقطعة لعلوم الحاسب",
+      "title_en": "Discrete Math for CS",
+      "credits": 3,
+      "category": "core",
+      "requirements": {
+        "courses": [
+          "احص 101",
+          "ريض 151"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 212",
+      "code_en": "CSC 212",
+      "title_ar": "تراكيب البيانات",
+      "title_en": "Data Structures",
+      "credits": 3,
+      "category": "core",
+      "requirements": {
+        "courses": [
+          "عال 113"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 304",
+      "code_en": "CSC 304",
+      "title_ar": "أخلاقيات الحوسبة وطرق البحث",
+      "title_en": "Computing Ethics & Research Methods",
+      "credits": 3,
+      "category": "core",
+      "requirements": {
+        "courses": [
+          "عال 113"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 339",
+      "code_en": "CSC 339",
+      "title_ar": "نظرية الحوسبة",
+      "title_en": "Theory of Computing",
+      "credits": 3,
+      "category": "core",
+      "requirements": {
+        "courses": [
+          "عال 281"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 380",
+      "code_en": "CSC 380",
+      "title_ar": "أسس نظم قواعد البيانات",
+      "title_en": "Database Systems Fundamentals",
+      "credits": 3,
+      "category": "core",
+      "requirements": {
+        "courses": [],
+        "min_credits": 0,
+        "coreqs": [
+          "عال 212"
+        ]
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 311",
+      "code_en": "CSC 311",
+      "title_ar": "تصميم وتحليل الخوارزميات",
+      "title_en": "Design & Analysis of Algorithms",
+      "credits": 3,
+      "category": "core",
+      "requirements": {
+        "courses": [
+          "عال 212",
+          "عال 281"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 227",
+      "code_en": "CSC 227",
+      "title_ar": "نظم التشغيل",
+      "title_en": "Operating Systems",
+      "credits": 3,
+      "category": "core",
+      "requirements": {
+        "courses": [
+          "عال 212"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 329",
+      "code_en": "CSC 329",
+      "title_ar": "شبكات الحاسبات",
+      "title_en": "Computer Networks",
+      "credits": 3,
+      "category": "core",
+      "requirements": {
+        "courses": [],
+        "min_credits": 0,
+        "coreqs": [
+          "عال 227"
+        ]
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 361",
+      "code_en": "CSC 361",
+      "title_ar": "الذكاء الاصطناعي",
+      "title_en": "Artificial Intelligence",
+      "credits": 3,
+      "category": "core",
+      "requirements": {
+        "courses": [
+          "عال 212"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 429",
+      "code_en": "CSC 429",
+      "title_ar": "أمن الحاسبات",
+      "title_en": "Computer Security",
+      "credits": 3,
+      "category": "core",
+      "requirements": {
+        "courses": [],
+        "min_credits": 0,
+        "coreqs": [
+          "عال 329"
+        ]
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 343",
+      "code_en": "CSC 343",
+      "title_ar": "تحليل وتصميم الأنظمة",
+      "title_en": "Systems Analysis & Design",
+      "credits": 3,
+      "category": "core",
+      "requirements": {
+        "courses": [
+          "عال 212"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 340",
+      "code_en": "CSC 340",
+      "title_ar": "لغات البرمجة والترجمة",
+      "title_en": "Programming Languages & Compilers",
+      "credits": 3,
+      "category": "core",
+      "requirements": {
+        "courses": [
+          "عال 339"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 453",
+      "code_en": "CSC 453",
+      "title_ar": "المعالجة المتوازية",
+      "title_en": "Parallel Processing",
+      "credits": 3,
+      "category": "core",
+      "requirements": {
+        "courses": [
+          "عال 227"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 479",
+      "code_en": "CSC 479",
+      "title_ar": "التدريب الميداني",
+      "title_en": "Field Training (Co-op)",
+      "credits": 1,
+      "category": "core",
+      "requirements": {
+        "courses": [],
+        "min_credits": 90,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 481",
+      "code_en": "CSC 481",
+      "title_ar": "قواعد البيانات الضخمة وNoSQL",
+      "title_en": "Big Data & NoSQL Databases",
+      "credits": 3,
+      "category": "required_general",
+      "requirements": {
+        "courses": [
+          "عال 380"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 496",
+      "code_en": "CSC 496",
+      "title_ar": "مشروع تخرج 1",
+      "title_en": "Graduation Project 1",
+      "credits": 2,
+      "category": "required_general",
+      "requirements": {
+        "courses": [],
+        "min_credits": 90,
+        "coreqs": [
+          "عال 343"
+        ]
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 497",
+      "code_en": "CSC 497",
+      "title_ar": "مشروع تخرج 2",
+      "title_en": "Graduation Project 2",
+      "credits": 4,
+      "category": "required_general",
+      "requirements": {
+        "courses": [
+          "عال 496"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 216",
+      "code_en": "CSC 216",
+      "title_ar": "البرمجة بلغة Python",
+      "title_en": "Programming in Python",
+      "credits": 3,
+      "category": "required_ai",
+      "requirements": {
+        "courses": [
+          "عال 111"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 462",
+      "code_en": "CSC 462",
+      "title_ar": "تعليم الآلة",
+      "title_en": "Machine Learning",
+      "credits": 3,
+      "category": "required_ai",
+      "requirements": {
+        "courses": [
+          "عال 361"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 494",
+      "code_en": "CSC 494",
+      "title_ar": "مشروع تخرج 1 في الذكاء الاصطناعي",
+      "title_en": "Graduation Project 1 (AI)",
+      "credits": 2,
+      "category": "required_ai",
+      "requirements": {
+        "courses": [],
+        "min_credits": 90,
+        "coreqs": [
+          "عال 361"
+        ]
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 495",
+      "code_en": "CSC 495",
+      "title_ar": "مشروع تخرج 2 في الذكاء الاصطناعي",
+      "title_en": "Graduation Project 2 (AI)",
+      "credits": 4,
+      "category": "required_ai",
+      "requirements": {
+        "courses": [
+          "عال 494"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 215",
+      "code_en": "CSC 215",
+      "title_ar": "البرمجة الإجرائية بلغة C",
+      "title_en": "Procedural Programming in C",
+      "credits": 3,
+      "category": "required_cyber",
+      "requirements": {
+        "courses": [
+          "عال 111"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 437",
+      "code_en": "CSC 437",
+      "title_ar": "أمن الشبكات",
+      "title_en": "Network Security",
+      "credits": 3,
+      "category": "required_cyber",
+      "requirements": {
+        "courses": [
+          "عال 429"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 488",
+      "code_en": "CSC 488",
+      "title_ar": "مشروع تخرج 1 في الشبكات والأمن السيبراني",
+      "title_en": "Graduation Project 1 (Cyber)",
+      "credits": 2,
+      "category": "required_cyber",
+      "requirements": {
+        "courses": [],
+        "min_credits": 90,
+        "coreqs": [
+          "عال 429"
+        ]
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 492",
+      "code_en": "CSC 492",
+      "title_ar": "مشروع تخرج 2 في الشبكات والأمن السيبراني",
+      "title_en": "Graduation Project 2 (Cyber)",
+      "credits": 4,
+      "category": "required_cyber",
+      "requirements": {
+        "courses": [
+          "عال 488"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "سلم 104",
+      "code_en": "IC 104",
+      "title_ar": "النظام السياسي الإسلامي",
+      "title_en": "Islamic Political System",
+      "credits": 2,
+      "category": "university_elective",
+      "requirements": {
+        "courses": [],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "سلم 103",
+      "code_en": "IC 103",
+      "title_ar": "النظام الاقتصادي الإسلامي",
+      "title_en": "Islamic Economic System",
+      "credits": 2,
+      "category": "university_elective",
+      "requirements": {
+        "courses": [],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "سلم 102",
+      "code_en": "IC 102",
+      "title_ar": "الأسرة في الإسلام",
+      "title_en": "Family in Islam",
+      "credits": 2,
+      "category": "university_elective",
+      "requirements": {
+        "courses": [],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "سلم 101",
+      "code_en": "IC 101",
+      "title_ar": "أصول الثقافة الإسلامية",
+      "title_en": "Foundations of Islamic Culture",
+      "credits": 2,
+      "category": "university_elective",
+      "requirements": {
+        "courses": [],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "قرأ 100",
+      "code_en": "QURN 100",
+      "title_ar": "القرآن الكريم",
+      "title_en": "The Holy Quran",
+      "credits": 2,
+      "category": "university_elective",
+      "requirements": {
+        "courses": [],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "سلم 100",
+      "code_en": "IC 100",
+      "title_ar": "دراسات في السيرة النبوية",
+      "title_en": "Studies in the Prophetic Biography",
+      "credits": 2,
+      "category": "university_elective",
+      "requirements": {
+        "courses": [],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "سلم 109",
+      "code_en": "IC 109",
+      "title_ar": "المرأة ودورها التنموي",
+      "title_en": "Women & Their Developmental Role",
+      "credits": 2,
+      "category": "university_elective",
+      "requirements": {
+        "courses": [],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "سلم 106",
+      "code_en": "IC 106",
+      "title_ar": "الفقه الطبي",
+      "title_en": "Medical Jurisprudence",
+      "credits": 2,
+      "category": "university_elective",
+      "requirements": {
+        "courses": [],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "سلم 105",
+      "code_en": "IC 105",
+      "title_ar": "حقوق الإنسان",
+      "title_en": "Human Rights",
+      "credits": 2,
+      "category": "university_elective",
+      "requirements": {
+        "courses": [],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "فيز 103",
+      "code_en": "PHYS 103",
+      "title_ar": "فيزياء عامة 1",
+      "title_en": "General Physics 1",
+      "credits": 4,
+      "category": "science_elective",
+      "requirements": {
+        "courses": [],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "فيز 104",
+      "code_en": "PHYS 104",
+      "title_ar": "فيزياء عامة 2",
+      "title_en": "General Physics 2",
+      "credits": 4,
+      "category": "science_elective",
+      "requirements": {
+        "courses": [],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "كيم 108",
+      "code_en": "CHEM 108",
+      "title_ar": "كيمياء عضوية",
+      "title_en": "Organic Chemistry",
+      "credits": 4,
+      "category": "science_elective",
+      "requirements": {
+        "courses": [],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "كيم 201",
+      "code_en": "CHEM 201",
+      "title_ar": "كيمياء عامة 2",
+      "title_en": "General Chemistry 2",
+      "credits": 4,
+      "category": "science_elective",
+      "requirements": {
+        "courses": [],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "كيح 202",
+      "code_en": "BCH 202",
+      "title_ar": "كيمياء حيوية عامة",
+      "title_en": "General Biochemistry",
+      "credits": 4,
+      "category": "science_elective",
+      "requirements": {
+        "courses": [],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "فيز 210",
+      "code_en": "PHYS 210",
+      "title_ar": "ميكانيكا تقليدية 1",
+      "title_en": "Classical Mechanics 1",
+      "credits": 4,
+      "category": "science_elective",
+      "requirements": {
+        "courses": [
+          "ريض 101"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 412",
+      "code_en": "CSC 412",
+      "title_ar": "محاكاة ونمذجة",
+      "title_en": "Simulation & Modeling",
+      "credits": 3,
+      "category": "elective_general",
+      "requirements": {
+        "courses": [
+          "عال 311"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 411",
+      "code_en": "CSC 411",
+      "title_ar": "الخوارزميات المتقدمة وتقنيات البرمجة",
+      "title_en": "Advanced Algorithms & Programming",
+      "credits": 3,
+      "category": "elective_general",
+      "requirements": {
+        "courses": [
+          "عال 311"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 386",
+      "code_en": "CSC 386",
+      "title_ar": "خوارزميات وتقنيات أنظمة قواعد البيانات",
+      "title_en": "DBMS Algorithms & Techniques",
+      "credits": 3,
+      "category": "elective_general",
+      "requirements": {
+        "courses": [
+          "عال 380"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 384",
+      "code_en": "CSC 384",
+      "title_ar": "التحليل العددي التطبيقي",
+      "title_en": "Applied Numerical Analysis",
+      "credits": 3,
+      "category": "elective_general",
+      "requirements": {
+        "courses": [
+          "عال 311"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 350",
+      "code_en": "CSC 350",
+      "title_ar": "التطوير الشامل لتطبيقات الويب 1",
+      "title_en": "Full-Stack Web Dev 1",
+      "credits": 3,
+      "category": "elective_general",
+      "requirements": {
+        "courses": [
+          "عال 329"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 320",
+      "code_en": "CSC 320",
+      "title_ar": "برمجة النظم",
+      "title_en": "Systems Programming",
+      "credits": 3,
+      "category": "elective_general",
+      "requirements": {
+        "courses": [
+          "عال 227"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 450",
+      "code_en": "CSC 450",
+      "title_ar": "التطوير الشامل لتطبيقات الويب 2",
+      "title_en": "Full-Stack Web Dev 2",
+      "credits": 3,
+      "category": "elective_general",
+      "requirements": {
+        "courses": [
+          "عال 350"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 443",
+      "code_en": "CSC 443",
+      "title_ar": "إدارة مشاريع البرمجيات وتقنية المعلومات",
+      "title_en": "SW & IT Project Management",
+      "credits": 3,
+      "category": "elective_general",
+      "requirements": {
+        "courses": [
+          "عال 343"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 440",
+      "code_en": "CSC 440",
+      "title_ar": "التفاعلية بين الإنسان والآلة",
+      "title_en": "Human-Computer Interaction",
+      "credits": 3,
+      "category": "elective_general",
+      "requirements": {
+        "courses": [
+          "عال 343"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 432",
+      "code_en": "CSC 432",
+      "title_ar": "الأنظمة المادية السيبرانية",
+      "title_en": "Cyber-Physical Systems",
+      "credits": 3,
+      "category": "elective_general",
+      "requirements": {
+        "courses": [
+          "عال 329"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 413",
+      "code_en": "CSC 413",
+      "title_ar": "العرض المرئي للبيانات",
+      "title_en": "Data Visualization",
+      "credits": 3,
+      "category": "elective_general",
+      "requirements": {
+        "courses": [
+          "عال 212"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 482",
+      "code_en": "CSC 482",
+      "title_ar": "مقدمة في علم البيانات",
+      "title_en": "Intro to Data Science",
+      "credits": 3,
+      "category": "elective_general",
+      "requirements": {
+        "courses": [
+          "عال 380"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 463",
+      "code_en": "CSC 463",
+      "title_ar": "التعلم العميق",
+      "title_en": "Deep Learning",
+      "credits": 3,
+      "category": "elective_general",
+      "requirements": {
+        "courses": [
+          "عال 462"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 458",
+      "code_en": "CSC 458",
+      "title_ar": "الحوسبة السحابية",
+      "title_en": "Cloud Computing",
+      "credits": 3,
+      "category": "elective_general",
+      "requirements": {
+        "courses": [
+          "عال 329"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 456",
+      "code_en": "CSC 456",
+      "title_ar": "النظم الموزعة",
+      "title_en": "Distributed Systems",
+      "credits": 3,
+      "category": "elective_general",
+      "requirements": {
+        "courses": [
+          "عال 329"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 489",
+      "code_en": "CSC 489",
+      "title_ar": "موضوعات مختارة في علوم الحاسب",
+      "title_en": "Selected Topics in CS",
+      "credits": 3,
+      "category": "elective_general",
+      "requirements": {
+        "courses": [
+          "عال 481"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 484",
+      "code_en": "CSC 484",
+      "title_ar": "استعادة المعلومات",
+      "title_en": "Information Retrieval",
+      "credits": 3,
+      "category": "elective_general",
+      "requirements": {
+        "courses": [
+          "عال 380"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "هال 483",
+      "code_en": "SWE 483",
+      "title_ar": "تطوير تطبيقات الجوال",
+      "title_en": "Mobile Application Development",
+      "credits": 3,
+      "category": "elective_general",
+      "requirements": {
+        "courses": [
+          "عال 113"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": false
+    },
+    {
+      "code": "عال 472",
+      "code_en": "CSC 472",
+      "title_ar": "الرؤية بالحاسب",
+      "title_en": "Computer Vision",
+      "credits": 3,
+      "category": "elective_ai",
+      "requirements": {
+        "courses": [
+          "عال 361"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 474",
+      "code_en": "CSC 474",
+      "title_ar": "الروبوتات والأنظمة غير المأهولة",
+      "title_en": "Robotics & Autonomous Systems",
+      "credits": 3,
+      "category": "elective_ai",
+      "requirements": {
+        "courses": [
+          "عال 227"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 478",
+      "code_en": "CSC 478",
+      "title_ar": "معالجة وتحليل الصور الرقمية",
+      "title_en": "Digital Image Processing",
+      "credits": 3,
+      "category": "elective_ai",
+      "requirements": {
+        "courses": [
+          "عال 212"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 464",
+      "code_en": "CSC 464",
+      "title_ar": "معالجة اللغة الطبيعية",
+      "title_en": "Natural Language Processing",
+      "credits": 3,
+      "category": "elective_ai",
+      "requirements": {
+        "courses": [
+          "عال 361"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 465",
+      "code_en": "CSC 465",
+      "title_ar": "برمجة الألعاب",
+      "title_en": "Game Programming",
+      "credits": 3,
+      "category": "elective_ai",
+      "requirements": {
+        "courses": [
+          "عال 361"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 466",
+      "code_en": "CSC 466",
+      "title_ar": "تعزيز التعلم",
+      "title_en": "Reinforcement Learning",
+      "credits": 3,
+      "category": "elective_ai",
+      "requirements": {
+        "courses": [
+          "عال 462"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 469",
+      "code_en": "CSC 469",
+      "title_ar": "مواضيع مختارة في الذكاء الاصطناعي",
+      "title_en": "Selected Topics in AI",
+      "credits": 3,
+      "category": "elective_ai",
+      "requirements": {
+        "courses": [
+          "عال 361"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "نال 463",
+      "code_en": "CSC 463",
+      "title_ar": "مقدمة في التنقيب في البيانات",
+      "title_en": "Intro to Data Mining",
+      "credits": 3,
+      "category": "elective_ai",
+      "requirements": {
+        "courses": [
+          "عال 361"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": false
+    },
+    {
+      "code": "عال 436",
+      "code_en": "CSC 436",
+      "title_ar": "الجرائم السيبرانية",
+      "title_en": "Cyber Crimes",
+      "credits": 3,
+      "category": "elective_cyber",
+      "requirements": {
+        "courses": [
+          "عال 429"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 435",
+      "code_en": "CSC 435",
+      "title_ar": "أساسيات الخصوصية",
+      "title_en": "Privacy Fundamentals",
+      "credits": 3,
+      "category": "elective_cyber",
+      "requirements": {
+        "courses": [
+          "عال 429"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 434",
+      "code_en": "CSC 434",
+      "title_ar": "التشفير التطبيقي",
+      "title_en": "Applied Cryptography",
+      "credits": 3,
+      "category": "elective_cyber",
+      "requirements": {
+        "courses": [
+          "عال 429"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 433",
+      "code_en": "CSC 433",
+      "title_ar": "أمن التطبيقات",
+      "title_en": "Application Security",
+      "credits": 3,
+      "category": "elective_cyber",
+      "requirements": {
+        "courses": [
+          "عال 429"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 427",
+      "code_en": "CSC 427",
+      "title_ar": "اختبار الاختراق وتقييم نقاط الضعف",
+      "title_en": "Penetration Testing & Vuln Assessment",
+      "credits": 3,
+      "category": "elective_cyber",
+      "requirements": {
+        "courses": [
+          "عال 429"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "عال 439",
+      "code_en": "CSC 439",
+      "title_ar": "مواضيع مختارة في الأمن السيبراني",
+      "title_en": "Selected Topics in Cybersecurity",
+      "credits": 3,
+      "category": "elective_cyber",
+      "requirements": {
+        "courses": [
+          "عال 429"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": true
+    },
+    {
+      "code": "هال 445",
+      "code_en": "SWE 445",
+      "title_ar": "بروتوكولات وخوارزميات الشبكات",
+      "title_en": "Network Protocols & Algorithms",
+      "credits": 3,
+      "category": "elective_cyber",
+      "requirements": {
+        "courses": [
+          "عال 329"
+        ],
+        "min_credits": 0,
+        "coreqs": []
+      },
+      "verified": false
+    }
+  ],
+  "degree_plans": {
+    "general": {
+      "المستوى 1": [
+        "انجل 100",
+        "عرب 100",
+        "احص 101",
+        "ريد 101",
+        "كيم 101"
+      ],
+      "المستوى 2": [
+        "انجل 110",
+        "نهج 101",
+        "فجب 101",
+        "ريض 101",
+        "تقن 101"
+      ],
+      "المستوى 3": [
+        "ريض 151",
+        "عال 111",
+        "سلم 107",
+        "ريض 106"
+      ],
+      "المستوى 4": [
+        "ريض 244",
+        "عال 281",
+        "عال 220",
+        "عال 113",
+        "سلم 108"
+      ],
+      "المستوى 5": [
+        "عال 380",
+        "عال 339",
+        "عال 304",
+        "عال 212"
+      ],
+      "المستوى 6": [
+        "عال 429",
+        "عال 361",
+        "عال 329",
+        "عال 311",
+        "عال 227"
+      ],
+      "المستوى 7": [
+        "عال 496",
+        "عال 479",
+        "عال 481",
+        "عال 343",
+        "عال 340"
+      ],
+      "المستوى 8": [
+        "عال 497",
+        "عال 453"
+      ]
+    },
+    "ai": {
+      "المستوى 1": [
+        "انجل 100",
+        "عرب 100",
+        "احص 101",
+        "ريد 101",
+        "كيم 101"
+      ],
+      "المستوى 2": [
+        "انجل 110",
+        "نهج 101",
+        "فجب 101",
+        "ريض 101",
+        "تقن 101"
+      ],
+      "المستوى 3": [
+        "ريض 151",
+        "عال 111",
+        "سلم 107",
+        "ريض 106"
+      ],
+      "المستوى 4": [
+        "ريض 244",
+        "عال 281",
+        "عال 220",
+        "عال 113",
+        "سلم 108"
+      ],
+      "المستوى 5": [
+        "عال 380",
+        "عال 339",
+        "عال 304",
+        "عال 212",
+        "عال 216"
+      ],
+      "المستوى 6": [
+        "عال 429",
+        "عال 361",
+        "عال 329",
+        "عال 311",
+        "عال 227"
+      ],
+      "المستوى 7": [
+        "عال 494",
+        "عال 479",
+        "عال 462",
+        "عال 343",
+        "عال 340"
+      ],
+      "المستوى 8": [
+        "عال 495",
+        "عال 453"
+      ]
+    },
+    "cyber": {
+      "المستوى 1": [
+        "انجل 100",
+        "عرب 100",
+        "احص 101",
+        "ريد 101",
+        "كيم 101"
+      ],
+      "المستوى 2": [
+        "انجل 110",
+        "نهج 101",
+        "فجب 101",
+        "ريض 101",
+        "تقن 101"
+      ],
+      "المستوى 3": [
+        "ريض 151",
+        "عال 111",
+        "سلم 107",
+        "ريض 106"
+      ],
+      "المستوى 4": [
+        "ريض 244",
+        "عال 281",
+        "عال 220",
+        "عال 113",
+        "سلم 108"
+      ],
+      "المستوى 5": [
+        "عال 380",
+        "عال 339",
+        "عال 304",
+        "عال 212",
+        "عال 215"
+      ],
+      "المستوى 6": [
+        "عال 429",
+        "عال 361",
+        "عال 329",
+        "عال 311",
+        "عال 227"
+      ],
+      "المستوى 7": [
+        "عال 488",
+        "عال 479",
+        "عال 437",
+        "عال 343",
+        "عال 340"
+      ],
+      "المستوى 8": [
+        "عال 492",
+        "عال 453"
+      ]
+    }
+  },
+  "elective_groups": {
+    "general": [
+      {
+        "name_en": "University Requirements",
+        "name_ar": "متطلبات الجامعة",
+        "choose_credits": 4,
+        "options": [
+          "سلم 104",
+          "سلم 103",
+          "سلم 102",
+          "سلم 101",
+          "قرأ 100",
+          "سلم 100",
+          "سلم 109",
+          "سلم 106",
+          "سلم 105"
+        ]
+      },
+      {
+        "name_en": "Science Requirements",
+        "name_ar": "متطلبات علمية",
+        "choose_credits": 4,
+        "options": [
+          "فيز 103",
+          "فيز 104",
+          "كيم 108",
+          "كيم 201",
+          "كيح 202",
+          "فيز 210"
+        ]
+      },
+      {
+        "name_en": "Programming Language Requirement",
+        "name_ar": "متطلب لغة برمجة (عام)",
+        "choose_credits": 3,
+        "options": [
+          "عال 215",
+          "عال 216"
+        ]
+      },
+      {
+        "name_en": "General Track Electives",
+        "name_ar": "متطلبات المسار",
+        "choose_credits": 12,
+        "options": [
+          "عال 412",
+          "عال 411",
+          "عال 386",
+          "عال 384",
+          "عال 350",
+          "عال 320",
+          "عال 450",
+          "عال 443",
+          "عال 440",
+          "عال 432",
+          "عال 413",
+          "عال 482",
+          "عال 463",
+          "عال 458",
+          "عال 456",
+          "عال 489",
+          "عال 484",
+          "هال 483",
+          "عال 462",
+          "عال 437"
+        ]
+      }
+    ],
+    "ai": [
+      {
+        "name_en": "University Requirements",
+        "name_ar": "متطلبات الجامعة",
+        "choose_credits": 4,
+        "options": [
+          "سلم 104",
+          "سلم 103",
+          "سلم 102",
+          "سلم 101",
+          "قرأ 100",
+          "سلم 100",
+          "سلم 109",
+          "سلم 106",
+          "سلم 105"
+        ]
+      },
+      {
+        "name_en": "Science Requirements",
+        "name_ar": "متطلبات علمية",
+        "choose_credits": 4,
+        "options": [
+          "فيز 103",
+          "فيز 104",
+          "كيم 108",
+          "كيم 201",
+          "كيح 202",
+          "فيز 210"
+        ]
+      },
+      {
+        "name_en": "AI Track Electives",
+        "name_ar": "متطلبات المسار",
+        "choose_credits": 12,
+        "options": [
+          "عال 472",
+          "عال 474",
+          "عال 478",
+          "عال 464",
+          "عال 465",
+          "عال 466",
+          "عال 469",
+          "نال 463",
+          "عال 463"
+        ]
+      }
+    ],
+    "cyber": [
+      {
+        "name_en": "University Requirements",
+        "name_ar": "متطلبات الجامعة",
+        "choose_credits": 4,
+        "options": [
+          "سلم 104",
+          "سلم 103",
+          "سلم 102",
+          "سلم 101",
+          "قرأ 100",
+          "سلم 100",
+          "سلم 109",
+          "سلم 106",
+          "سلم 105"
+        ]
+      },
+      {
+        "name_en": "Science Requirements",
+        "name_ar": "متطلبات علمية",
+        "choose_credits": 4,
+        "options": [
+          "فيز 103",
+          "فيز 104",
+          "كيم 108",
+          "كيم 201",
+          "كيح 202",
+          "فيز 210"
+        ]
+      },
+      {
+        "name_en": "Cybersecurity Track Electives",
+        "name_ar": "متطلبات المسار",
+        "choose_credits": 12,
+        "options": [
+          "عال 436",
+          "عال 435",
+          "عال 434",
+          "عال 433",
+          "عال 427",
+          "عال 439",
+          "هال 445",
+          "عال 432",
+          "عال 462"
+        ]
+      }
+    ]
+  },
+  "students": {
+    "demo_real": {
+      "name": "Sultan",
+      "track": "general",
+      "completed_credits": 98,
+      "completed": [
+        "عرب 100",
+        "انجل 100",
+        "انجل 110",
+        "تقن 101",
+        "ريد 101",
+        "ريض 101",
+        "احص 101",
+        "نهج 101",
+        "فجب 101",
+        "كيم 101",
+        "ريض 151",
+        "عال 111",
+        "سلم 107",
+        "فيز 104",
+        "ريض 106",
+        "سلم 108",
+        "عال 113",
+        "عال 220",
+        "كيم 108",
+        "ريض 244",
+        "عال 304",
+        "عال 215",
+        "عال 212",
+        "سلم 102",
+        "عال 281",
+        "عال 380",
+        "عال 361",
+        "سلم 105",
+        "عال 343",
+        "عال 311",
+        "عال 339",
+        "عال 227"
+      ]
+    },
+    "demo_early": {
+      "name": "Early-stage student (guardrail demo)",
+      "track": "ai",
+      "completed_credits": 59,
+      "completed": [
+        "انجل 100",
+        "عرب 100",
+        "احص 101",
+        "ريد 101",
+        "كيم 101",
+        "انجل 110",
+        "نهج 101",
+        "فجب 101",
+        "ريض 101",
+        "تقن 101",
+        "ريض 151",
+        "عال 111",
+        "سلم 107",
+        "ريض 106",
+        "ريض 244",
+        "عال 281",
+        "عال 220",
+        "عال 113",
+        "سلم 108"
+      ]
+    }
+  }
+}
