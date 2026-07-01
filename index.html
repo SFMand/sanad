@@ -572,8 +572,34 @@
       color: var(--muted);
       margin-bottom: 7px;
       display: flex;
+      align-items: center;
       justify-content: space-between;
       gap: 8px;
+    }
+
+    .sem-title-labels {
+      display: flex;
+      gap: 8px;
+    }
+
+    .select-all-btn {
+      font-size: .65rem;
+      font-weight: 600;
+      text-transform: none;
+      letter-spacing: normal;
+      color: var(--muted);
+      background: transparent;
+      border: 1px solid var(--line);
+      border-radius: var(--r-sm);
+      padding: 2px 8px;
+      cursor: pointer;
+      transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease), color var(--dur) var(--ease);
+    }
+
+    .select-all-btn:hover {
+      background: var(--raised);
+      border-color: var(--primary);
+      color: var(--ink);
     }
 
     .cells {
@@ -631,8 +657,8 @@
     }
 
     .cell.completed {
-      background: rgba(74, 222, 128, .1);
-      border-color: rgba(74, 222, 128, .4);
+      background: rgba(74, 222, 128, .22);
+      border-color: rgba(74, 222, 128, .65);
     }
 
     .cell.eligible {
@@ -1399,6 +1425,8 @@
         markDone: "tap to mark done",
         added: "marked done",
         levelLabel: "Level",
+        selectAll: "Select all",
+        unselectAll: "Unselect all",
         electivesTitle: "Track electives",
         electiveProgress: (g, done, total) => `${g}: ${done} of ${total} credits done`,
         otherCompleted: "Other completed courses",
@@ -1456,6 +1484,8 @@
         markDone: "انقر للتمييز كمُنجز",
         added: "تم التمييز كمُنجز",
         levelLabel: "المستوى",
+        selectAll: "تحديد الكل",
+        unselectAll: "إلغاء تحديد الكل",
         electivesTitle: "مقررات المسار الاختيارية",
         electiveProgress: (g, done, total) => `${g}: ${done} من ${total} ساعة منجزة`,
         otherCompleted: "مقررات أخرى مكتملة",
@@ -1643,6 +1673,22 @@
       refreshPlan();
     }
 
+    // Bulk version of toggleCompleted() for a "select all" / "unselect all" level button.
+    function toggleSemesterAll(codes, want) {
+      let changed = false;
+      codes.forEach((code) => {
+        if (!state.byCode[code]) return;
+        const has = state.completed.has(code);
+        if (want === has) return;
+        changed = true;
+        if (want) { state.completed.add(code); adjustCredits(code, true); }
+        else { state.completed.delete(code); adjustCredits(code, false); }
+      });
+      if (!changed) return;
+      renderProgress();
+      refreshPlan();
+    }
+
     // Ask the engine for per-course state, then repaint the grid. The frontend
     // never computes eligibility itself — colors come from the server.
     async function refreshPlan() {
@@ -1799,13 +1845,27 @@
           col.className = "semester";
           const title = document.createElement("div");
           title.className = "sem-title";
+
+          const labels = document.createElement("div");
+          labels.className = "sem-title-labels";
           // Within a year, odd level = semester 1, even = semester 2.
           const semNo = sem.level_num % 2 === 1 ? 1 : 2;
           const lvl = document.createElement("span");
           lvl.textContent = s.semesterLabel(semNo);
           const lv = document.createElement("span");
           lv.textContent = `${s.levelLabel} ${sem.level_num}`;
-          title.appendChild(lvl); title.appendChild(lv);
+          labels.appendChild(lvl); labels.appendChild(lv);
+          title.appendChild(labels);
+
+          const codes = sem.courses.map((c) => c.code);
+          const allDone = codes.length > 0 && codes.every((code) => state.completed.has(code));
+          const allBtn = document.createElement("button");
+          allBtn.type = "button";
+          allBtn.className = "select-all-btn";
+          allBtn.textContent = allDone ? s.unselectAll : s.selectAll;
+          allBtn.addEventListener("click", () => toggleSemesterAll(codes, !allDone));
+          title.appendChild(allBtn);
+
           col.appendChild(title);
 
           const cells = document.createElement("div");
