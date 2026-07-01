@@ -10,7 +10,7 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY app.py transcript_parser.py courses.json index.html ./
+COPY app.py transcript_parser.py data_layer.py courses.json course_planner.db index.html ./
 
 EXPOSE 5000
 

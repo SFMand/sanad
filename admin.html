@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Course Planner Admin</title>
+  <link rel="icon"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%230E1116'/%3E%3Cg fill='none' stroke='%235EEAD4' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cellipse cx='12' cy='7' rx='7' ry='2.5'/%3E%3Cpath d='M5 7v10a7 2.5 0 0 0 14 0V7'/%3E%3Cpath d='M5 12a7 2.5 0 0 0 14 0'/%3E%3C/g%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" />
+  <style>
+    :root {
+      --bg: #0E1116;
+      --panel: #171B22;
+      --raised: #1B212C;
+      --ink: #E6EAF0;
+      --muted: #8A93A6;
+      --line: #262B35;
+      --primary: #5EEAD4;
+      --primary-ink: #0E1116;
+      --accent: #F5A623;
+      --accent-ink: #0E1116;
+      --warn: #FBBF24;
+      --warn-bg: rgba(245, 166, 35, .15);
+      --eligible: #4ADE80;
+      --focus: #F5A623;
+      --danger: #F87171;
+
+      --font-head: "Space Grotesk", "IBM Plex Sans Arabic", "Noto Sans Arabic", system-ui, sans-serif;
+      --font-body: "Inter", "IBM Plex Sans Arabic", "Noto Sans Arabic", "Segoe UI", system-ui, sans-serif;
+      --fs-xs: .72rem;
+      --fs-sm: .82rem;
+      --fs-base: .94rem;
+      --fs-md: 1.05rem;
+      --fs-lg: 1.3rem;
+      --fs-xl: 1.7rem;
+      --lh-tight: 1.2;
+      --lh-body: 1.55;
+
+      --sp-1: 4px;
+      --sp-2: 8px;
+      --sp-3: 12px;
+      --sp-4: 16px;
+      --sp-5: 20px;
+      --sp-6: 24px;
+      --sp-8: 32px;
+      --sp-10: 40px;
+
+      --r-sm: 8px;
+      --r-md: 12px;
+      --r-lg: 16px;
+      --r-pill: 999px;
+      --radius: var(--r-md);
+
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, .3);
+      --shadow: 0 1px 3px rgba(0, 0, 0, .35), 0 6px 20px rgba(0, 0, 0, .25);
+
+      --ease: cubic-bezier(.4, 0, .2, 1);
+      --dur: .18s;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      min-height: 100%;
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--font-body);
+      font-size: var(--fs-base);
+      color: var(--ink);
+      background: var(--bg);
+      line-height: var(--lh-body);
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+      display: flex;
+      flex-direction: column;
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+      font-family: var(--font-head);
+      line-height: var(--lh-tight);
+      letter-spacing: -.01em;
+    }
+
+    button {
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .ic {
+      width: 1em;
+      height: 1em;
+      display: inline-block;
+      vertical-align: -.14em;
+      flex: none;
+      stroke: currentColor;
+    }
+
+    /* ---------- Header ---------- */
+    header {
+      background: var(--panel);
+      border-bottom: 1px solid var(--line);
+      padding: 14px clamp(12px, 3vw, 28px);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 16px 24px;
+    }
+
+    .brand {
+      margin-inline-end: auto;
+      display: flex;
+      align-items: center;
+      gap: var(--sp-3);
+    }
+
+    .brand-mark {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      flex: none;
+      border-radius: var(--r-sm);
+      background: linear-gradient(135deg, rgba(94, 234, 212, .18), rgba(245, 166, 35, .14));
+      border: 1px solid var(--line);
+      color: var(--primary);
+    }
+
+    .brand-mark .ic {
+      width: 24px;
+      height: 24px;
+    }
+
+    .brand h1 {
+      font-size: clamp(1.15rem, 2.4vw, 1.55rem);
+      font-weight: 600;
+      letter-spacing: -.02em;
+    }
+
+    .brand p {
+      margin: var(--sp-1) 0 0;
+      color: var(--muted);
+      font-size: var(--fs-sm);
+    }
+
+    .seg-toggle {
+      display: inline-flex;
+      border: 1px solid var(--line);
+      border-radius: var(--r-pill);
+      overflow: hidden;
+      background: var(--bg);
+    }
+
+    .seg-toggle button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--sp-2);
+      border: 0;
+      background: transparent;
+      padding: 7px 16px;
+      color: var(--muted);
+      font-weight: 600;
+      font-size: .85rem;
+      min-width: 48px;
+      transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+    }
+
+    .seg-toggle button .ic {
+      width: 15px;
+      height: 15px;
+    }
+
+    .seg-toggle button:hover {
+      color: var(--ink);
+    }
+
+    .seg-toggle button[aria-pressed="true"] {
+      background: var(--primary);
+      color: var(--primary-ink);
+    }
+
+    .seg-toggle button[aria-pressed="true"]:hover {
+      color: var(--primary-ink);
+    }
+
+    /* ---------- Layout ---------- */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-4);
+      padding: var(--sp-4) clamp(12px, 3vw, 28px);
+      min-height: 0;
+    }
+
+    .admin-tabs {
+      align-self: flex-start;
+      max-width: 100%;
+      overflow-x: auto;
+    }
+
+    .admin-tabs button {
+      white-space: nowrap;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .tabpanel {
+      display: none;
+      flex-direction: column;
+    }
+
+    .tabpanel.active {
+      display: flex;
+    }
+
+    .panel-head {
+      padding: 16px 18px 8px;
+    }
+
+    .panel-head h2 {
+      font-size: var(--fs-md);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-head p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: .82rem;
+    }
+
+    /* ---------- Forms ---------- */
+    .form-body {
+      padding: 8px 18px 18px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: var(--sp-4);
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .field.span2 {
+      grid-column: span 2;
+    }
+
+    .field label {
+      font-size: .78rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .field .hint {
+      font-size: .72rem;
+      color: var(--muted);
+    }
+
+    .field input[type="text"],
+    .field input[type="number"],
+    .field select,
+    .field textarea {
+      font: inherit;
+      padding: 9px 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--r-sm);
+      background: var(--bg);
+      color: var(--ink);
+    }
+
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      outline: 2px solid var(--focus);
+      outline-offset: 1px;
+    }
+
+    .checkbox-field {
+      flex-direction: row;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .checkbox-field input {
+      width: 17px;
+      height: 17px;
+      accent-color: var(--primary);
+    }
+
+    .checkbox-field label {
+      color: var(--ink);
+      font-weight: 500;
+    }
+
+    .repeatable {
+      display: flex;
+      gap: 8px;
+    }
+
+    .repeatable input {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .chips-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .rchip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: .78rem;
+      border: 1px solid rgba(94, 234, 212, .4);
+      background: rgba(94, 234, 212, .1);
+      color: var(--ink);
+      padding: 4px 10px;
+      border-radius: var(--r-pill);
+      cursor: pointer;
+    }
+
+    .rchip:hover {
+      border-color: var(--danger);
+      background: rgba(248, 113, 113, .1);
+    }
+
+    .rchip .x {
+      color: var(--muted);
+      display: inline-flex;
+    }
+
+    .rchip:hover .x {
+      color: var(--danger);
+    }
+
+    .form-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: var(--sp-4);
+    }
+
+    /* ---------- Buttons / badges (shared with app.py) ---------- */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--sp-2);
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--ink);
+      padding: 9px 14px;
+      border-radius: var(--r-sm);
+      font-weight: 600;
+      transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease), transform var(--dur) var(--ease), filter var(--dur) var(--ease);
+    }
+
+    .btn:hover {
+      border-color: var(--muted);
+    }
+
+    .btn:active {
+      transform: translateY(1px);
+    }
+
+    .btn.primary {
+      background: var(--primary);
+      color: var(--primary-ink);
+      border-color: var(--primary);
+    }
+
+    .btn.primary:hover {
+      filter: brightness(1.08);
+    }
+
+    .btn.ghost {
+      background: transparent;
+    }
+
+    .btn.ghost:hover {
+      background: var(--raised);
+    }
+
+    .btn .ic {
+      width: 16px;
+      height: 16px;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: .66rem;
+      font-weight: 700;
+      padding: 1px 7px;
+      border-radius: var(--r-pill);
+      margin-inline-start: 6px;
+      vertical-align: middle;
+    }
+
+    .badge.cr {
+      background: rgba(255, 255, 255, .06);
+      color: var(--muted);
+    }
+
+    .badge.unverified {
+      background: var(--warn-bg);
+      color: var(--warn);
+    }
+
+    /* ---------- Courses table ---------- */
+    .table-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 18px 12px;
+      flex-wrap: wrap;
+    }
+
+    .table-toolbar select {
+      font: inherit;
+      padding: 7px 10px;
+      border: 1px solid var(--line);
+      border-radius: var(--r-sm);
+      background: var(--bg);
+      color: var(--ink);
+    }
+
+    .table-scroll {
+      max-height: 480px;
+      overflow-y: auto;
+      padding: 0 18px 18px;
+    }
+
+    .admin-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .85rem;
+    }
+
+    .admin-table th {
+      position: sticky;
+      top: 0;
+      background: var(--panel);
+      text-align: start;
+      color: var(--muted);
+      font-size: .7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .admin-table td {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .admin-table tr:hover td {
+      background: var(--raised);
+    }
+
+    .table-count {
+      font-size: .78rem;
+      color: var(--muted);
+      padding: 0 18px 12px;
+      margin-top: -8px;
+    }
+
+    /* ---------- Integrity check ---------- */
+    .check-result {
+      margin: 0 18px 18px;
+      padding: 12px 14px;
+      border-radius: var(--r-md);
+      font-size: .85rem;
+    }
+
+    .check-result.ok {
+      background: rgba(74, 222, 128, .1);
+      border: 1px solid rgba(74, 222, 128, .4);
+      color: var(--eligible);
+    }
+
+    .check-result.bad {
+      background: rgba(248, 113, 113, .12);
+      border: 1px solid rgba(248, 113, 113, .4);
+      color: var(--danger);
+    }
+
+    .check-result ul {
+      margin: 8px 0 0;
+      padding-inline-start: 18px;
+    }
+
+    /* ---------- Activity log ---------- */
+    .log-panel {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .log-list {
+      max-height: 220px;
+      overflow-y: auto;
+      padding: 0 18px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .log-item {
+      font-size: .82rem;
+      padding: 8px 12px;
+      border-radius: var(--r-sm);
+      border: 1px solid var(--line);
+    }
+
+    .log-item.ok {
+      color: var(--eligible);
+      border-color: rgba(74, 222, 128, .4);
+      background: rgba(74, 222, 128, .08);
+    }
+
+    .log-item.err {
+      color: var(--danger);
+      border-color: rgba(248, 113, 113, .4);
+      background: rgba(248, 113, 113, .08);
+    }
+
+    .log-item time {
+      color: var(--muted);
+      font-size: .72rem;
+      margin-inline-end: 8px;
+    }
+
+    .log-empty {
+      color: var(--muted);
+      font-size: .82rem;
+      padding: 0 18px 18px;
+    }
+
+    /* ---------- Footer ---------- */
+    footer {
+      padding: 14px clamp(12px, 3vw, 28px);
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: .76rem;
+      text-align: center;
+    }
+
+    @media (max-width: 640px) {
+      .field.span2 {
+        grid-column: span 1;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true" id="brandMark"></span>
+      <div class="brand-text">
+        <h1>Course Planner Admin</h1>
+        <p>Additive authoring UI over db_admin.py — course_planner.db</p>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="seg-toggle admin-tabs" id="adminTabs" role="tablist" aria-label="Admin section">
+      <button data-tab="courses" aria-pressed="true">Courses</button>
+      <button data-tab="course">Add Course</button>
+      <button data-tab="track">Add Track</button>
+      <button data-tab="planEntry">Plan Entry</button>
+      <button data-tab="electiveGroup">Elective Group</button>
+      <button data-tab="electiveOption">Elective Option</button>
+      <button data-tab="check">Integrity Check</button>
+    </div>
+
+    <!-- ---------- Courses browse ---------- -->
+    <section class="panel tabpanel active" id="tab-courses" role="tabpanel">
+      <div class="panel-head">
+        <h2>Courses</h2>
+        <p>Browse the shared catalog, optionally filtered by a track's degree plan.</p>
+      </div>
+      <div class="table-toolbar">
+        <select id="coursesTrackFilter">
+          <option value="">All tracks</option>
+        </select>
+        <button class="btn ghost" id="coursesRefresh">Refresh</button>
+      </div>
+      <div class="table-count" id="coursesCount"></div>
+      <div class="table-scroll">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Code</th>
+              <th>Code (EN)</th>
+              <th>Title (EN)</th>
+              <th>Credits</th>
+            </tr>
+          </thead>
+          <tbody id="coursesBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ---------- Add course ---------- -->
+    <section class="panel tabpanel" id="tab-course" role="tabpanel">
+      <div class="panel-head">
+        <h2>Add course</h2>
+        <p>Adds one course to the shared catalog. The Arabic code is canonical — it must match the transcript / EduGate record.</p>
+      </div>
+      <form class="form-body" id="courseForm">
+        <div class="form-grid">
+          <div class="field">
+            <label for="cCode">Code (Arabic, canonical)</label>
+            <input id="cCode" type="text" required />
+          </div>
+          <div class="field">
+            <label for="cCodeEn">Code (English)</label>
+            <input id="cCodeEn" type="text" required />
+          </div>
+          <div class="field">
+            <label for="cTitleAr">Title (Arabic)</label>
+            <input id="cTitleAr" type="text" required />
+          </div>
+          <div class="field">
+            <label for="cTitleEn">Title (English)</label>
+            <input id="cTitleEn" type="text" required />
+          </div>
+          <div class="field">
+            <label for="cCredits">Credits</label>
+            <input id="cCredits" type="number" min="0" required />
+          </div>
+          <div class="field">
+            <label for="cCategory">Category</label>
+            <input id="cCategory" type="text" list="categoryList" required />
+            <datalist id="categoryList"></datalist>
+          </div>
+          <div class="field">
+            <label for="cMinCredits">Minimum credits required</label>
+            <input id="cMinCredits" type="number" min="0" value="0" />
+          </div>
+          <div class="field checkbox-field">
+            <input id="cUnverified" type="checkbox" />
+            <label for="cUnverified">Unverified (OCR-ambiguous seed data)</label>
+          </div>
+          <div class="field span2">
+            <label for="cPrereqInput">Prerequisites</label>
+            <div class="repeatable">
+              <input id="cPrereqInput" type="text" list="courseCodeList" placeholder="Course code, e.g. عال 111" />
+              <button class="btn" type="button" id="cPrereqAdd">Add</button>
+            </div>
+            <div class="chips-row" id="cPrereqChips"></div>
+          </div>
+          <div class="field span2">
+            <label for="cCoreqInput">Co-requisites</label>
+            <div class="repeatable">
+              <input id="cCoreqInput" type="text" list="courseCodeList" placeholder="Course code, e.g. عال 227" />
+              <button class="btn" type="button" id="cCoreqAdd">Add</button>
+            </div>
+            <div class="chips-row" id="cCoreqChips"></div>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn primary" type="submit">Add course</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- ---------- Add track ---------- -->
+    <section class="panel tabpanel" id="tab-track" role="tabpanel">
+      <div class="panel-head">
+        <h2>Add track</h2>
+        <p>Adds a new track/major.</p>
+      </div>
+      <form class="form-body" id="trackForm">
+        <div class="form-grid">
+          <div class="field">
+            <label for="tCode">Code</label>
+            <input id="tCode" type="text" required placeholder="e.g. computer_engineering" />
+          </div>
+          <div class="field">
+            <label for="tNameAr">Name (Arabic)</label>
+            <input id="tNameAr" type="text" required />
+          </div>
+          <div class="field">
+            <label for="tPosition">Position</label>
+            <input id="tPosition" type="number" min="0" value="0" required />
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn primary" type="submit">Add track</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- ---------- Add plan entry ---------- -->
+    <section class="panel tabpanel" id="tab-planEntry" role="tabpanel">
+      <div class="panel-head">
+        <h2>Add plan entry</h2>
+        <p>Places a course in a track's degree plan at a given level.</p>
+      </div>
+      <form class="form-body" id="planEntryForm">
+        <div class="form-grid">
+          <div class="field">
+            <label for="peTrack">Track</label>
+            <select id="peTrack" required></select>
+          </div>
+          <div class="field">
+            <label for="peLevel">Level</label>
+            <input id="peLevel" type="text" list="levelKeyList" required placeholder='e.g. المستوى 1' />
+            <datalist id="levelKeyList"></datalist>
+          </div>
+          <div class="field">
+            <label for="peCourse">Course</label>
+            <input id="peCourse" type="text" list="courseCodeList" required />
+          </div>
+          <div class="field">
+            <label for="pePosition">Position</label>
+            <input id="pePosition" type="number" min="0" value="0" required />
+            <span class="hint">Order within the level, starting at 0.</span>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn primary" type="submit">Add plan entry</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- ---------- Add elective group ---------- -->
+    <section class="panel tabpanel" id="tab-electiveGroup" role="tabpanel">
+      <div class="panel-head">
+        <h2>Add elective group</h2>
+        <p>Adds an elective group to a track (e.g. "AI Electives — choose 6 credits").</p>
+      </div>
+      <form class="form-body" id="electiveGroupForm">
+        <div class="form-grid">
+          <div class="field">
+            <label for="egTrack">Track</label>
+            <select id="egTrack" required></select>
+          </div>
+          <div class="field">
+            <label for="egPosition">Position</label>
+            <input id="egPosition" type="number" min="0" value="0" required />
+          </div>
+          <div class="field">
+            <label for="egNameEn">Name (English)</label>
+            <input id="egNameEn" type="text" required />
+          </div>
+          <div class="field">
+            <label for="egNameAr">Name (Arabic)</label>
+            <input id="egNameAr" type="text" required />
+          </div>
+          <div class="field">
+            <label for="egChooseCredits">Choose credits</label>
+            <input id="egChooseCredits" type="number" min="0" required />
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn primary" type="submit">Add elective group</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- ---------- Add elective option ---------- -->
+    <section class="panel tabpanel" id="tab-electiveOption" role="tabpanel">
+      <div class="panel-head">
+        <h2>Add elective option</h2>
+        <p>Adds a course option to an existing elective group.</p>
+      </div>
+      <form class="form-body" id="electiveOptionForm">
+        <div class="form-grid">
+          <div class="field span2">
+            <label for="eoGroup">Elective group</label>
+            <select id="eoGroup" required></select>
+          </div>
+          <div class="field">
+            <label for="eoCourse">Course</label>
+            <input id="eoCourse" type="text" list="courseCodeList" required />
+          </div>
+          <div class="field">
+            <label for="eoPosition">Position</label>
+            <input id="eoPosition" type="number" min="0" value="0" required />
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn primary" type="submit">Add elective option</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- ---------- Integrity check ---------- -->
+    <section class="panel tabpanel" id="tab-check" role="tabpanel">
+      <div class="panel-head">
+        <h2>Integrity check</h2>
+        <p>Runs PRAGMA foreign_key_check across the whole database.</p>
+      </div>
+      <div class="form-body">
+        <button class="btn" id="runCheckBtn">Run check</button>
+      </div>
+      <div id="checkResult"></div>
+    </section>
+
+    <!-- ---------- Activity log ---------- -->
+    <section class="panel log-panel">
+      <div class="panel-head">
+        <h2>Activity</h2>
+        <p>Results of actions taken this session.</p>
+      </div>
+      <div class="log-list" id="logList"></div>
+      <p class="log-empty" id="logEmpty">Nothing yet.</p>
+    </section>
+  </main>
+
+  <footer>
+    Additive operations only — this does not edit or delete existing rows. Changes take effect immediately on course_planner.db.
+  </footer>
+
+  <datalist id="courseCodeList"></datalist>
+
+  <script>
+    "use strict";
+
+    // ---- Inline icons (Lucide path data), same technique as index.html ----
+    const ICON_PATHS = {
+      "database": '<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/>',
+      "x": '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+    };
+    function icon(name, cls) {
+      const p = ICON_PATHS[name] || "";
+      return '<svg class="ic' + (cls ? " " + cls : "") + '" viewBox="0 0 24 24" fill="none" ' +
+        'stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ' +
+        'aria-hidden="true">' + p + '</svg>';
+    }
+
+    const $ = (id) => document.getElementById(id);
+    $("brandMark").innerHTML = icon("database");
+
+    let META = { tracks: [], categories: [], level_keys: [], courses: [], elective_groups: [] };
+    let prereqs = [];
+    let coreqs = [];
+
+    // ---- Tabs ----------------------------------------------------------------
+    const TABS = ["courses", "course", "track", "planEntry", "electiveGroup", "electiveOption", "check"];
+    function setTab(name) {
+      TABS.forEach((t) => {
+        $("tab-" + t).classList.toggle("active", t === name);
+      });
+      document.querySelectorAll("#adminTabs button").forEach((b) => {
+        b.setAttribute("aria-pressed", String(b.dataset.tab === name));
+      });
+    }
+    document.querySelectorAll("#adminTabs button").forEach((b) => {
+      b.addEventListener("click", () => setTab(b.dataset.tab));
+    });
+
+    // ---- Activity log ----------------------------------------------------------
+    function logEvent(ok, message) {
+      $("logEmpty").hidden = true;
+      const item = document.createElement("div");
+      item.className = "log-item " + (ok ? "ok" : "err");
+      const time = document.createElement("time");
+      time.textContent = new Date().toLocaleTimeString();
+      item.appendChild(time);
+      item.appendChild(document.createTextNode(message));
+      $("logList").prepend(item);
+    }
+
+    // ---- Meta / dropdowns -------------------------------------------------------
+    function fillSelect(sel, items, valueFn, labelFn, placeholder) {
+      sel.innerHTML = "";
+      if (placeholder) {
+        const opt = document.createElement("option");
+        opt.value = "";
+        opt.textContent = placeholder;
+        sel.appendChild(opt);
+      }
+      items.forEach((item) => {
+        const opt = document.createElement("option");
+        opt.value = valueFn(item);
+        opt.textContent = labelFn(item);
+        sel.appendChild(opt);
+      });
+    }
+
+    function fillDatalist(dl, items, valueFn) {
+      dl.innerHTML = "";
+      items.forEach((item) => {
+        const opt = document.createElement("option");
+        opt.value = valueFn(item);
+        dl.appendChild(opt);
+      });
+    }
+
+    async function loadMeta() {
+      const res = await fetch("/api/meta");
+      META = await res.json();
+
+      fillSelect($("coursesTrackFilter"), META.tracks, (t) => t.code, (t) => `${t.code} — ${t.name_ar}`, "All tracks");
+      fillSelect($("peTrack"), META.tracks, (t) => t.code, (t) => `${t.code} — ${t.name_ar}`);
+      fillSelect($("egTrack"), META.tracks, (t) => t.code, (t) => `${t.code} — ${t.name_ar}`);
+      fillSelect($("eoGroup"), META.elective_groups,
+        (g) => g.id, (g) => `#${g.id} — ${g.name_en} (${g.track_code})`);
+
+      fillDatalist($("categoryList"), META.categories.map((c) => ({ c })), (x) => x.c);
+      fillDatalist($("levelKeyList"), META.level_keys.map((l) => ({ l })), (x) => x.l);
+      fillDatalist($("courseCodeList"), META.courses, (c) => c.code);
+
+      renderCoursesTable();
+    }
+
+    // ---- Courses table -----------------------------------------------------
+    async function renderCoursesTable() {
+      const track = $("coursesTrackFilter").value;
+      const url = track ? `/api/courses?track=${encodeURIComponent(track)}` : "/api/courses";
+      const res = await fetch(url);
+      const rows = await res.json();
+      const body = $("coursesBody");
+      body.innerHTML = "";
+      rows.forEach((r) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td>${r.code}</td><td>${r.code_en}</td><td>${r.title_en}</td><td>${r.credits}</td>`;
+        body.appendChild(tr);
+      });
+      $("coursesCount").textContent = `${rows.length} course(s).`;
+    }
+    $("coursesTrackFilter").addEventListener("change", renderCoursesTable);
+    $("coursesRefresh").addEventListener("click", renderCoursesTable);
+
+    // ---- Generic POST helper ------------------------------------------------
+    async function postJSON(url, body) {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data.error) {
+        throw new Error(data.error || `HTTP ${res.status}`);
+      }
+      return data;
+    }
+
+    // ---- Prereq / coreq chip builders ---------------------------------------
+    function renderChips(container, list, onRemove) {
+      container.innerHTML = "";
+      list.forEach((code) => {
+        const chip = document.createElement("span");
+        chip.className = "rchip";
+        chip.innerHTML = `${code} <span class="x">${icon("x")}</span>`;
+        chip.addEventListener("click", () => onRemove(code));
+        container.appendChild(chip);
+      });
+    }
+    function renderPrereqChips() {
+      renderChips($("cPrereqChips"), prereqs, (code) => {
+        prereqs = prereqs.filter((c) => c !== code);
+        renderPrereqChips();
+      });
+    }
+    function renderCoreqChips() {
+      renderChips($("cCoreqChips"), coreqs, (code) => {
+        coreqs = coreqs.filter((c) => c !== code);
+        renderCoreqChips();
+      });
+    }
+    $("cPrereqAdd").addEventListener("click", () => {
+      const v = $("cPrereqInput").value.trim();
+      if (v && !prereqs.includes(v)) {
+        prereqs.push(v);
+        renderPrereqChips();
+      }
+      $("cPrereqInput").value = "";
+    });
+    $("cCoreqAdd").addEventListener("click", () => {
+      const v = $("cCoreqInput").value.trim();
+      if (v && !coreqs.includes(v)) {
+        coreqs.push(v);
+        renderCoreqChips();
+      }
+      $("cCoreqInput").value = "";
+    });
+
+    // ---- Forms ----------------------------------------------------------------
+    $("courseForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      try {
+        await postJSON("/api/courses", {
+          code: $("cCode").value.trim(),
+          code_en: $("cCodeEn").value.trim(),
+          title_ar: $("cTitleAr").value.trim(),
+          title_en: $("cTitleEn").value.trim(),
+          credits: Number($("cCredits").value),
+          category: $("cCategory").value.trim(),
+          min_credits: Number($("cMinCredits").value || 0),
+          prereqs, coreqs,
+          unverified: $("cUnverified").checked,
+        });
+        logEvent(true, `Added course ${$("cCode").value.trim()}.`);
+        e.target.reset();
+        prereqs = []; coreqs = [];
+        renderPrereqChips();
+        renderCoreqChips();
+        await loadMeta();
+      } catch (err) {
+        logEvent(false, `Add course failed: ${err.message}`);
+      }
+    });
+
+    $("trackForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      try {
+        await postJSON("/api/tracks", {
+          code: $("tCode").value.trim(),
+          name_ar: $("tNameAr").value.trim(),
+          position: Number($("tPosition").value),
+        });
+        logEvent(true, `Added track ${$("tCode").value.trim()}.`);
+        e.target.reset();
+        await loadMeta();
+      } catch (err) {
+        logEvent(false, `Add track failed: ${err.message}`);
+      }
+    });
+
+    $("planEntryForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      try {
+        await postJSON("/api/plan-entries", {
+          track: $("peTrack").value,
+          level: $("peLevel").value.trim(),
+          course: $("peCourse").value.trim(),
+          position: Number($("pePosition").value),
+        });
+        logEvent(true, `Added ${$("peCourse").value.trim()} to ${$("peTrack").value}/${$("peLevel").value.trim()}.`);
+        e.target.reset();
+        await loadMeta();
+      } catch (err) {
+        logEvent(false, `Add plan entry failed: ${err.message}`);
+      }
+    });
+
+    $("electiveGroupForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      try {
+        const data = await postJSON("/api/elective-groups", {
+          track: $("egTrack").value,
+          position: Number($("egPosition").value),
+          name_en: $("egNameEn").value.trim(),
+          name_ar: $("egNameAr").value.trim(),
+          choose_credits: Number($("egChooseCredits").value),
+        });
+        logEvent(true, `Added elective group #${data.id} (${$("egNameEn").value.trim()}).`);
+        e.target.reset();
+        await loadMeta();
+      } catch (err) {
+        logEvent(false, `Add elective group failed: ${err.message}`);
+      }
+    });
+
+    $("electiveOptionForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      try {
+        await postJSON("/api/elective-options", {
+          group_id: Number($("eoGroup").value),
+          course: $("eoCourse").value.trim(),
+          position: Number($("eoPosition").value),
+        });
+        logEvent(true, `Added ${$("eoCourse").value.trim()} to elective group #${$("eoGroup").value}.`);
+        e.target.reset();
+        await loadMeta();
+      } catch (err) {
+        logEvent(false, `Add elective option failed: ${err.message}`);
+      }
+    });
+
+    // ---- Integrity check ---------------------------------------------------
+    $("runCheckBtn").addEventListener("click", async () => {
+      const box = $("checkResult");
+      box.innerHTML = "";
+      try {
+        const res = await fetch("/api/check");
+        const violations = await res.json();
+        const div = document.createElement("div");
+        if (violations.length === 0) {
+          div.className = "check-result ok";
+          div.textContent = "No foreign key violations found.";
+        } else {
+          div.className = "check-result bad";
+          div.innerHTML = `${violations.length} foreign key violation(s) found:` +
+            "<ul>" + violations.map((v) =>
+              `<li>table=${v.table} rowid=${v.rowid} references table=${v.references_table} fk_id=${v.fk_id}</li>`
+            ).join("") + "</ul>";
+        }
+        box.appendChild(div);
+        logEvent(violations.length === 0, violations.length === 0 ?
+          "Integrity check passed." : `Integrity check found ${violations.length} violation(s).`);
+      } catch (err) {
+        logEvent(false, `Integrity check failed: ${err.message}`);
+      }
+    });
+
+    loadMeta();
+  </script>
+</body>
+
+</html>

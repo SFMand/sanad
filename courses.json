@@ -1,4 +1,5 @@
 {
+  "_readme": "Frozen historical seed data, migrated once into course_planner.db via migrate_to_sqlite.py. No longer read at runtime by app.py — use db_admin.py to add courses/tracks/plan entries going forward.",
   "program": {
     "name_en": "BSc in Computer Science",
     "name_ar": "بكالوريوس علوم الحاسب",

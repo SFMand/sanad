@@ -4,13 +4,15 @@ at the College of Computer and Information Sciences (CCIS), King Saud University
 
 Design principle (the whole point of this project):
     The language model NEVER guesses prerequisites. A deterministic Python engine
-    computes eligibility from courses.json and passes the verified result to the model.
+    computes eligibility from course_planner.db and passes the verified result to the model.
     Code handles truth; the model only explains and recommends FROM that result.
 
-Data model (courses.json):
+Data model (course_planner.db, see migration/*.sql):
     The CANONICAL course id is the Arabic code (e.g. "عال 212") — it matches the
     transcript / EduGate record. code_en / title_en / title_ar are DISPLAY ONLY.
-    All internal logic keys on the Arabic "code".
+    All internal logic keys on the Arabic "code". courses.json is frozen historical
+    seed data (migrated once via migrate_to_sqlite.py); it is no longer read at
+    runtime — use db_admin.py to add courses/tracks/plan entries going forward.
 
 Run:
     pip install flask google-genai
@@ -20,7 +22,6 @@ Run:
     python app.py selftest                    # acceptance checks (no API key needed)
 """
 
-import json
 import os
 import re
 import tempfile
@@ -97,12 +98,9 @@ def call_llm(system_prompt, messages):
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-def load_data():
-    with open(os.path.join(BASE_DIR, "courses.json"), encoding="utf-8") as f:
-        return json.load(f)
+from data_layer import load_data_from_db
 
-
-DB = load_data()
+DB = load_data_from_db()
 PROGRAM = DB["program"]
 COURSES = {c["code"]: c for c in DB["courses"]}      # Arabic code -> course
 STUDENTS = DB.get("students", {})                    # id -> student
@@ -564,7 +562,7 @@ def run_selftest():
     print("CS Course Planner — eligibility engine acceptance tests")
     print("=" * 72)
     catalog_credits = sum(c["credits"] for c in DB["courses"])
-    print(f"Loaded courses.json: {len(COURSES)} courses, {catalog_credits} catalog credits; "
+    print(f"Loaded course_planner.db: {len(COURSES)} courses, {catalog_credits} catalog credits; "
           f"program requires {TOTAL_REQUIRED}. Tracks: {', '.join(TRACKS)}.\n")
 
     results = []
