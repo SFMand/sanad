@@ -46,10 +46,13 @@ def migrate(data, conn):
     )
 
     track_names_ar = program.get("track_names_ar", {})
+    # Legacy courses.json has no per-track total; every track in it belongs to
+    # the single program, so seed each with the program-global total.
     for position, track in enumerate(program["tracks"]):
         conn.execute(
-            "INSERT INTO tracks (code, name_ar, position) VALUES (?, ?, ?)",
-            (track, track_names_ar.get(track, track), position),
+            "INSERT INTO tracks (code, name_ar, position, total_credits_required) VALUES (?, ?, ?, ?)",
+            (track, track_names_ar.get(track, track), position,
+             program["total_credits_required"]),
         )
 
     for c in data["courses"]:
@@ -115,10 +118,15 @@ def normalize_for_compare(data):
     each course's prereq/coreq lists — the engine only ever does
     membership checks on those, never indexes into them)."""
     out = json.loads(json.dumps(data))  # deep copy
+    # Derived, DB-only fields with no counterpart in the frozen JSON.
+    for k in ("track_total_credits", "track_names_en"):
+        out.get("program", {}).pop(k, None)
     out["courses"] = {c["code"]: c for c in out["courses"]}
     for c in out["courses"].values():
         c["requirements"]["courses"] = sorted(c["requirements"]["courses"])
         c["requirements"]["coreqs"] = sorted(c["requirements"]["coreqs"])
+        # Derived, DB-only field with no counterpart in the frozen JSON.
+        c["requirements"].pop("prereqs_by_track", None)
     return out
 
 
