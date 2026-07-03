@@ -7,7 +7,9 @@ import sqlite3
 from collections import defaultdict
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.path.join(BASE_DIR, "course_planner.db")
+# Overridable so app.py and admin_app.py can point at a shared DB file on a
+# mounted volume (e.g. two containers writing the same course_planner.db).
+DB_PATH = os.environ.get("COURSE_DB_PATH", os.path.join(BASE_DIR, "course_planner.db"))
 
 
 def connect():
