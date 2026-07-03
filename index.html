@@ -332,15 +332,14 @@
     }
 
     /* ---------- Courses panel ---------- */
-    .paste-row {
-      display: flex;
-      gap: 8px;
+    .search-row {
+      position: relative;
       padding: 8px 16px;
       max-width: 460px;
     }
 
-    .paste-row input {
-      flex: 1;
+    .search-row input {
+      width: 100%;
       min-width: 0;
       padding: 9px 12px;
       font: inherit;
@@ -348,6 +347,70 @@
       border-radius: var(--r-sm);
       background: var(--panel);
       color: var(--ink);
+    }
+
+    .search-row input:focus {
+      outline: none;
+      border-color: var(--focus);
+    }
+
+    .search-dropdown {
+      position: absolute;
+      left: 16px;
+      right: 16px;
+      top: calc(100% - 2px);
+      z-index: 20;
+      margin: 0;
+      padding: 4px;
+      list-style: none;
+      max-height: 280px;
+      overflow-y: auto;
+      background: var(--raised);
+      border: 1px solid var(--line);
+      border-radius: var(--r-sm);
+      box-shadow: var(--shadow);
+    }
+
+    .search-item {
+      display: flex;
+      align-items: baseline;
+      gap: var(--sp-2);
+      padding: 8px 10px;
+      border-radius: var(--r-sm);
+      cursor: pointer;
+    }
+
+    .search-item:hover,
+    .search-item.active {
+      background: var(--panel);
+    }
+
+    .search-item .si-code {
+      font-weight: 600;
+      color: var(--primary);
+      white-space: nowrap;
+    }
+
+    .search-item .si-title {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--ink);
+      font-size: var(--fs-sm);
+    }
+
+    .search-item .si-cr {
+      color: var(--muted);
+      font-size: var(--fs-xs);
+      white-space: nowrap;
+    }
+
+    .search-empty {
+      padding: 8px 10px;
+      color: var(--muted);
+      font-size: var(--fs-sm);
     }
 
     .btn {
@@ -1317,10 +1380,11 @@
           <input id="fileInput" type="file" accept="application/pdf,.pdf" class="sr-only" />
         </div>
 
-        <div class="paste-row">
-          <input id="pasteInput" type="text" inputmode="latin" aria-label="Paste course codes"
-            placeholder="Or paste codes, e.g. عال 212, CSC 311" />
-          <button class="btn" id="pasteBtn">Add</button>
+        <div class="search-row">
+          <input id="courseSearch" type="text" inputmode="latin" autocomplete="off"
+            role="combobox" aria-expanded="false" aria-autocomplete="list" aria-controls="courseSearchList"
+            aria-label="Search courses" placeholder="Search by code or title, e.g. عال 212, Algorithms" />
+          <ul class="search-dropdown" id="courseSearchList" role="listbox" hidden></ul>
         </div>
 
         <div class="review" id="review" hidden>
@@ -1402,8 +1466,8 @@
         trackLabel: "Track",
         trackNames: { general: "General", ai: "Artificial Intelligence", cyber: "Cyber Security" },
         uploadBtn: "Upload transcript (PDF)",
-        pastePlaceholder: "Or paste codes, e.g. عال 212, CSC 311",
-        pasteBtn: "Add",
+        searchPlaceholder: "Search by code or title, e.g. عال 212, Algorithms",
+        searchNoResults: "No matching courses",
         demoBtn: "Load demo student",
         clearBtn: "Clear",
         chatPlaceholder: "Ask about your plan…",
@@ -1461,8 +1525,8 @@
         trackLabel: "المسار",
         trackNames: {},  // filled from program.track_names_ar
         uploadBtn: "رفع السجل الأكاديمي (PDF)",
-        pastePlaceholder: "أو ألصق الرموز، مثل: عال 212، CSC 311",
-        pasteBtn: "إضافة",
+        searchPlaceholder: "ابحث بالرمز أو الاسم، مثل: عال 212، خوارزميات",
+        searchNoResults: "لا توجد مقررات مطابقة",
         demoBtn: "تحميل طالب تجريبي",
         clearBtn: "مسح",
         chatPlaceholder: "اسأل عن خطتك الدراسية…",
@@ -1599,8 +1663,8 @@
       $("coursesHelp").textContent = s.coursesHelp;
       $("trackLabel").textContent = s.trackLabel;
       labelWithIcon("uploadBtn", "upload", s.uploadBtn);
-      $("pasteInput").placeholder = s.pastePlaceholder;
-      $("pasteBtn").textContent = s.pasteBtn;
+      $("courseSearch").placeholder = s.searchPlaceholder;
+      hideSearchResults();
       $("demoBtn").textContent = s.demoBtn;
       $("clearBtn").textContent = s.clearBtn;
       $("chatInput").placeholder = s.chatPlaceholder;
@@ -1610,7 +1674,6 @@
       $("reviewConfirm").textContent = s.reviewConfirm;
       $("reviewCancel").textContent = s.reviewCancel;
       $("disclaimer").textContent = s.disclaimer;
-      $("pasteBtn").textContent = s.pasteBtn;
       labelWithIcon("tabPlan", "calendar", s.tabPlan);
       labelWithIcon("tabAdvisor", "message-circle", s.tabAdvisor);
       $("langEn").setAttribute("aria-pressed", String(state.lang === "en"));
@@ -2310,19 +2373,102 @@
       ta.style.height = Math.min(140, ta.scrollHeight) + "px";
     }
 
-    // ---- Completed-courses controls ------------------------------------------
-    function applyPaste() {
-      const raw = $("pasteInput").value.split(/[,;\n]+/).map((x) => x.trim()).filter(Boolean);
-      let added = 0;
-      raw.forEach((token) => {
-        const code = normalizeCode(token);
-        if (state.byCode[code] && !state.completed.has(code)) {
-          state.completed.add(code); adjustCredits(code, true); added++;
+    // ---- Completed-courses controls (search + autocomplete) ------------------
+    let searchResults = [];
+    let searchActiveIndex = -1;
+
+    function courseSearchHay(c) {
+      return [c.code, c.code_en, normEn(c.code_en), c.title_en, c.title_ar]
+        .join(" ").toLowerCase();
+    }
+
+    function renderSearchResults(query) {
+      const list = $("courseSearchList");
+      const input = $("courseSearch");
+      const q = query.trim().toLowerCase();
+      searchActiveIndex = -1;
+      if (!q) { hideSearchResults(); return; }
+
+      searchResults = state.catalog
+        .filter((c) => !state.completed.has(c.code) && courseSearchHay(c).includes(q))
+        .slice(0, 8);
+
+      list.textContent = "";
+      if (searchResults.length === 0) {
+        const li = document.createElement("li");
+        li.className = "search-empty";
+        li.textContent = t().searchNoResults;
+        list.appendChild(li);
+      } else {
+        searchResults.forEach((c, i) => {
+          const li = document.createElement("li");
+          li.className = "search-item";
+          li.id = `searchItem-${i}`;
+          li.setAttribute("role", "option");
+          const code = document.createElement("span");
+          code.className = "si-code"; code.textContent = c.code;
+          const title = document.createElement("span");
+          title.className = "si-title"; title.textContent = courseTitle(c);
+          const cr = document.createElement("span");
+          cr.className = "si-cr"; cr.textContent = `${c.credits} ${t().crSuffix}`;
+          li.appendChild(code); li.appendChild(title); li.appendChild(cr);
+          li.addEventListener("mousedown", (e) => { e.preventDefault(); selectSearchCourse(c.code); });
+          list.appendChild(li);
+        });
+      }
+      list.hidden = false;
+      input.setAttribute("aria-expanded", "true");
+    }
+
+    function setSearchActive(i) {
+      const items = $("courseSearchList").querySelectorAll(".search-item");
+      items.forEach((el) => el.classList.remove("active"));
+      searchActiveIndex = i;
+      if (i >= 0 && i < items.length) {
+        items[i].classList.add("active");
+        items[i].scrollIntoView({ block: "nearest" });
+        $("courseSearch").setAttribute("aria-activedescendant", items[i].id);
+      } else {
+        $("courseSearch").removeAttribute("aria-activedescendant");
+      }
+    }
+
+    function selectSearchCourse(code) {
+      toggleCompleted(code, true);
+      $("courseSearch").value = "";
+      hideSearchResults();
+      $("courseSearch").focus();
+    }
+
+    function hideSearchResults() {
+      $("courseSearchList").hidden = true;
+      $("courseSearchList").textContent = "";
+      $("courseSearch").setAttribute("aria-expanded", "false");
+      $("courseSearch").removeAttribute("aria-activedescendant");
+      searchResults = [];
+      searchActiveIndex = -1;
+    }
+
+    function onSearchKeydown(e) {
+      const count = searchResults.length;
+      if (e.key === "ArrowDown") {
+        if (!count) return;
+        e.preventDefault();
+        setSearchActive(Math.min(count - 1, searchActiveIndex + 1));
+      } else if (e.key === "ArrowUp") {
+        if (!count) return;
+        e.preventDefault();
+        setSearchActive(Math.max(0, searchActiveIndex - 1));
+      } else if (e.key === "Enter") {
+        e.preventDefault();
+        if (searchActiveIndex >= 0 && searchResults[searchActiveIndex]) {
+          selectSearchCourse(searchResults[searchActiveIndex].code);
+        } else if (count === 1) {
+          selectSearchCourse(searchResults[0].code);
         }
-      });
-      $("pasteInput").value = "";
-      refreshPlan();
-      if (added === 0) $("pasteInput").focus();
+      } else if (e.key === "Escape") {
+        hideSearchResults();
+      }
     }
 
     function loadDemo() {
@@ -2351,8 +2497,9 @@
       $("langAr").addEventListener("click", () => { state.lang = "ar"; applyLang(); });
       $("tabPlan").addEventListener("click", () => { state.view = "plan"; applyView(); });
       $("tabAdvisor").addEventListener("click", () => { state.view = "advisor"; applyView(); });
-      $("pasteBtn").addEventListener("click", applyPaste);
-      $("pasteInput").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); applyPaste(); } });
+      $("courseSearch").addEventListener("input", (e) => renderSearchResults(e.target.value));
+      $("courseSearch").addEventListener("keydown", onSearchKeydown);
+      $("courseSearch").addEventListener("blur", () => setTimeout(hideSearchResults, 120));
       $("uploadBtn").addEventListener("click", () => $("fileInput").click());
       $("fileInput").addEventListener("change", onFileChosen);
       $("reviewConfirm").addEventListener("click", confirmReview);
