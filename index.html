@@ -1459,7 +1459,7 @@
       en: {
         dir: "ltr",
         appTitle: "Sanad",
-        appSubtitle: "BSc Computer Science · KSU CCIS advising assistant",
+        appSubtitle: "KSU CCIS degree-plan advising assistant",
         progressLabel: "Credits completed",
         coursesHeading: "Degree plan",
         coursesHelp: "Pick your track, upload your transcript, or click a course to mark it done.",
@@ -1508,7 +1508,7 @@
         welcomeTitle: "Let's plan your degree",
         welcome: "Choose your track, upload your transcript (or tick courses) on the left, then ask me what to take next, whether you can take a specific course, or what's left before you graduate.",
         errorPrefix: "Couldn't reach the assistant: ",
-        disclaimer: "Planning aid only — not a substitute for your official KSU academic advisor. Some seed data is unverified; confirm it against the official CS study plan.",
+        disclaimer: "Planning aid only — not a substitute for your official KSU academic advisor. Some seed data is unverified; confirm it against the official study plan for your major.",
         chips: [
           "What should I take next semester?",
           "What electives can I take now?",
@@ -1567,7 +1567,7 @@
         welcomeTitle: "لنُخطّط لدراستك",
         welcome: "اختر مسارك، وارفع سجلك الأكاديمي (أو حدِّد المقررات) من القائمة، ثم اسألني عمّا يمكنك تسجيله، أو هل يمكنك أخذ مقرر معيّن، أو ماذا تبقّى حتى التخرج.",
         errorPrefix: "تعذّر الوصول إلى المساعد: ",
-        disclaimer: "أداة تخطيط فقط — لا تُغني عن المرشد الأكاديمي الرسمي بجامعة الملك سعود. بعض البيانات الأولية غير مؤكدة؛ تأكّد منها وفق الخطة الدراسية الرسمية لعلوم الحاسب.",
+        disclaimer: "أداة تخطيط فقط — لا تُغني عن المرشد الأكاديمي الرسمي بجامعة الملك سعود. بعض البيانات الأولية غير مؤكدة؛ تأكّد منها وفق الخطة الدراسية الرسمية لتخصصك.",
         chips: [
           "ما المقررات التي يمكنني تسجيلها الفصل القادم؟",
           "ما المقررات الاختيارية المتاحة لي الآن؟",
@@ -1769,6 +1769,9 @@
         if (res.ok && !data.error) {
           state.plan = data;
           state.eligibleCodes = data.eligible_codes || [];
+          // Graduation total is per-track (CS=128, CE=160); take the
+          // engine's value for the active track.
+          if (data.total_required) state.totalRequired = data.total_required;
         }
       } catch (_err) {
         /* keep last good plan; grid simply won't recolor */
@@ -2525,8 +2528,11 @@
         state.totalRequired = program.total_credits_required || 128;
         state.tracks = program.tracks || Object.keys(state.degreePlans);
         state.track = state.tracks[0] || "general";
-        // Arabic track names come from the program record.
+        // Track names come from the program record. Arabic is authoritative;
+        // English merges backend-provided names over the built-in defaults so
+        // added majors (CE, SWE, IS) render a proper label instead of a raw code.
         STRINGS.ar.trackNames = program.track_names_ar || {};
+        STRINGS.en.trackNames = { ...STRINGS.en.trackNames, ...(program.track_names_en || {}) };
       } catch (err) {
         addMessage("error", "Failed to load catalog: " + err.message);
       }

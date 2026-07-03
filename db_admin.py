@@ -67,12 +67,13 @@ def add_course(code, code_en, title_ar, title_en, credits, category,
         conn.close()
 
 
-def add_track(code, name_ar, position):
+def add_track(code, name_ar, position, total_credits_required=128, name_en=None):
     conn = connect()
     try:
         conn.execute(
-            "INSERT INTO tracks (code, name_ar, position) VALUES (?, ?, ?)",
-            (code, name_ar, position),
+            "INSERT INTO tracks (code, name_ar, position, total_credits_required, name_en) "
+            "VALUES (?, ?, ?, ?, ?)",
+            (code, name_ar, position, total_credits_required, name_en),
         )
         conn.commit()
     except sqlite3.IntegrityError:
@@ -176,7 +177,7 @@ def _cli_add_course(args):
 
 def _cli_add_track(args):
     try:
-        add_track(args.code, args.name_ar, args.position)
+        add_track(args.code, args.name_ar, args.position, args.total_credits, args.name_en)
     except sqlite3.IntegrityError as e:
         raise SystemExit(f"Rejected: {e}") from e
     print(f"Added track {args.code}.")
@@ -245,6 +246,9 @@ def main():
     p.add_argument("--code", required=True)
     p.add_argument("--name-ar", required=True)
     p.add_argument("--position", type=int, required=True)
+    p.add_argument("--total-credits", type=int, default=128,
+                   help="total credits required to graduate in this track")
+    p.add_argument("--name-en", help="English display name for the track")
     p.set_defaults(func=_cli_add_track)
 
     p = sub.add_parser("add-plan-entry", help="place a course in a track's degree plan")

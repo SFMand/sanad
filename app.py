@@ -104,10 +104,16 @@ DB = load_data_from_db()
 PROGRAM = DB["program"]
 COURSES = {c["code"]: c for c in DB["courses"]}      # Arabic code -> course
 STUDENTS = DB.get("students", {})                    # id -> student
-TOTAL_REQUIRED = PROGRAM["total_credits_required"]
+TOTAL_REQUIRED = PROGRAM["total_credits_required"]  # program-global fallback
+TRACK_TOTALS = PROGRAM.get("track_total_credits", {})
 TRACKS = PROGRAM["tracks"]
 DEFAULT_TRACK = TRACKS[0]
 TRACK_NAMES_AR = PROGRAM.get("track_names_ar", {})
+
+
+def total_for(track):
+    """Graduation credit total for a track (majors differ: CS=128, CE=160)."""
+    return TRACK_TOTALS.get(track) or TOTAL_REQUIRED
 
 
 def _norm_en(s):
@@ -169,41 +175,54 @@ def valid_track(track):
 # completed credits equal the sum of catalog-matched courses — older transcripts
 # carry prep courses that are not in this catalog.
 # ---------------------------------------------------------------------------
-def prereq_only_ok(code, completed, credits):
+def effective_prereqs(code, track):
+    """Prerequisites for `code` as seen by a student in `track`. A course that is
+    shared across majors can carry a different prerequisite set per track: if the
+    track has its own scoped set it fully OVERRIDES the global one, otherwise the
+    global (track-agnostic) set applies. E.g. عال 220 needs عال 111 in Software
+    Engineering but ريض 151 on the CS tracks."""
+    r = COURSES[code]["requirements"]
+    by_track = r.get("prereqs_by_track", {})
+    if track in by_track:
+        return by_track[track]
+    return list(r["courses"])
+
+
+def prereq_only_ok(code, completed, credits, track):
     if code not in COURSES:
         return False
     r = COURSES[code]["requirements"]
-    return all(p in completed for p in r["courses"]) and credits >= r["min_credits"]
+    return all(p in completed for p in effective_prereqs(code, track)) and credits >= r["min_credits"]
 
 
-def is_eligible(code, completed, credits):
+def is_eligible(code, completed, credits, track):
     if code not in COURSES or code in completed:
         return False
     r = COURSES[code]["requirements"]
-    if not all(p in completed for p in r["courses"]):
+    if not all(p in completed for p in effective_prereqs(code, track)):
         return False
     if credits < r["min_credits"]:
         return False
     for co in r["coreqs"]:                       # coreq: done OR co-registerable this term
-        if co in completed or prereq_only_ok(co, completed, credits):
+        if co in completed or prereq_only_ok(co, completed, credits, track):
             continue
         return False
     return True
 
 
-def eligible_now(completed, credits):
-    return [c for c in COURSES if is_eligible(c, completed, credits)]
+def eligible_now(completed, credits, track):
+    return [c for c in COURSES if is_eligible(c, completed, credits, track)]
 
 
-def missing_for(code, completed, credits):
-    """What blocks `code` right now (coreqs that are themselves co-registerable
-    this term are NOT counted as blockers)."""
+def missing_for(code, completed, credits, track):
+    """What blocks `code` right now for a student in `track` (coreqs that are
+    themselves co-registerable this term are NOT counted as blockers)."""
     r = COURSES[code]["requirements"]
     return {
-        "missing_courses": [p for p in r["courses"] if p not in completed],
+        "missing_courses": [p for p in effective_prereqs(code, track) if p not in completed],
         "missing_coreqs": [
             co for co in r["coreqs"]
-            if not (co in completed or prereq_only_ok(co, completed, credits))
+            if not (co in completed or prereq_only_ok(co, completed, credits, track))
         ],
         "credit_gap": max(0, r["min_credits"] - credits),
     }
@@ -252,7 +271,7 @@ def build_advising_record(completed, credits, track):
     completed = normalize_completed(completed)
     completed_set = set(completed)
     track = valid_track(track)
-    elig = eligible_now(completed_set, credits)
+    elig = eligible_now(completed_set, credits, track)
     elig_set = set(elig)
 
     req_remaining = [c for c in remaining_required(completed_set, track)
@@ -262,17 +281,18 @@ def build_advising_record(completed, credits, track):
     for code in req_remaining:
         if code in elig_set:
             continue
-        mr = missing_for(code, completed_set, credits)
+        mr = missing_for(code, completed_set, credits, track)
         v = _view(code)
         v.update(mr)
         blocked.append(v)
 
+    tot = total_for(track)
     return {
         "track": track,
         "track_name_ar": TRACK_NAMES_AR.get(track, track),
         "completed_credits": credits,
-        "total_required": TOTAL_REQUIRED,
-        "credits_remaining": max(0, TOTAL_REQUIRED - credits),
+        "total_required": tot,
+        "credits_remaining": max(0, tot - credits),
         "completed": [_view(c) for c in completed],
         "eligible_now": [_view(c) for c in elig],
         "remaining_required": [_view(c) for c in req_remaining],
@@ -290,7 +310,7 @@ def build_plan_view(completed, credits, track):
     completed = normalize_completed(completed)
     completed_set = set(completed)
     track = valid_track(track)
-    elig_set = set(eligible_now(completed_set, credits))
+    elig_set = set(eligible_now(completed_set, credits, track))
 
     plan = DB["degree_plans"][track]
     plan_codes = set()
@@ -317,7 +337,7 @@ def build_plan_view(completed, credits, track):
                 state = "locked"
             v = _view(code)
             v["state"] = state
-            v.update(missing_for(code, completed_set, credits)
+            v.update(missing_for(code, completed_set, credits, track)
                      if state == "locked" else
                      {"missing_courses": [], "missing_coreqs": [], "credit_gap": 0})
             sem_courses.append(v)
@@ -328,12 +348,13 @@ def build_plan_view(completed, credits, track):
 
     other_completed = [c for c in completed if c not in plan_codes]
 
+    tot = total_for(track)
     return {
         "track": track,
         "track_name_ar": TRACK_NAMES_AR.get(track, track),
         "completed_credits": credits,
-        "total_required": TOTAL_REQUIRED,
-        "credits_remaining": max(0, TOTAL_REQUIRED - credits),
+        "total_required": tot,
+        "credits_remaining": max(0, tot - credits),
         "years": [
             {"year": y, "semesters": years[y]} for y in sorted(years)
         ],
@@ -578,14 +599,14 @@ def run_selftest():
     s = STUDENTS["demo_real"]
     comp = set(normalize_completed(s["completed"]))
     cr = s["completed_credits"]
-    elig = eligible_now(comp, cr)
+    elig = eligible_now(comp, cr, "general")
     rem = remaining_required(comp, "general")
     check("eligible_now is non-empty", len(elig) > 0,
           f"{len(elig)} eligible: {', '.join(elig)}")
     check("remaining_required lists ~10 courses", 8 <= len(rem) <= 12,
           f"{len(rem)} remaining: {', '.join(rem)}")
     check("is_eligible('عال 496') is True (min_credits 90 met, coreq عال 343 completed)",
-          is_eligible("عال 496", comp, cr),
+          is_eligible("عال 496", comp, cr, "general"),
           f"min_credits={COURSES['عال 496']['requirements']['min_credits']}, "
           f"coreq عال 343 completed={'عال 343' in comp}")
     print()
@@ -595,16 +616,16 @@ def run_selftest():
     s = STUDENTS["demo_early"]
     comp = set(normalize_completed(s["completed"]))
     cr = s["completed_credits"]
-    m462 = missing_for("عال 462", comp, cr)
+    m462 = missing_for("عال 462", comp, cr, "ai")
     check("is_eligible('عال 462') is False, missing prereq عال 361",
-          not is_eligible("عال 462", comp, cr) and "عال 361" in m462["missing_courses"],
+          not is_eligible("عال 462", comp, cr, "ai") and "عال 361" in m462["missing_courses"],
           f"missing_courses={m462['missing_courses']}")
-    m311 = missing_for("عال 311", comp, cr)
+    m311 = missing_for("عال 311", comp, cr, "ai")
     check("is_eligible('عال 311') is False, missing عال 212",
-          not is_eligible("عال 311", comp, cr) and "عال 212" in m311["missing_courses"],
+          not is_eligible("عال 311", comp, cr, "ai") and "عال 212" in m311["missing_courses"],
           f"missing_courses={m311['missing_courses']}")
     check("is_eligible('عال 212') is True (prereq عال 113 done)",
-          is_eligible("عال 212", comp, cr),
+          is_eligible("عال 212", comp, cr, "ai"),
           f"عال 113 completed={'عال 113' in comp}")
     print()
 
@@ -613,9 +634,9 @@ def run_selftest():
     comp = {"عال 113", "عال 212", "عال 227"}   # has 227, NOT 329
     cr = sum(COURSES[c]["credits"] for c in comp)
     check("is_eligible('عال 429') is True (coreq عال 329 is co-registerable this term)",
-          is_eligible("عال 429", comp, cr),
+          is_eligible("عال 429", comp, cr, "general"),
           f"عال 429 coreqs={COURSES['عال 429']['requirements']['coreqs']}; "
-          f"عال 329 co-registerable={prereq_only_ok('عال 329', comp, cr)} "
+          f"عال 329 co-registerable={prereq_only_ok('عال 329', comp, cr, 'general')} "
           f"(عال 329 coreq عال 227 completed={'عال 227' in comp})")
     print()
 

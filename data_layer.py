@@ -30,7 +30,9 @@ def load_data_from_db(conn=None):
         program_row = conn.execute(
             "SELECT name_en, name_ar, college, total_credits_required FROM program WHERE id = 1"
         ).fetchone()
-        track_rows = conn.execute("SELECT code, name_ar FROM tracks ORDER BY position").fetchall()
+        track_rows = conn.execute(
+            "SELECT code, name_ar, name_en, total_credits_required FROM tracks ORDER BY position"
+        ).fetchall()
         program = {
             "name_en": program_row["name_en"],
             "name_ar": program_row["name_ar"],
@@ -38,14 +40,35 @@ def load_data_from_db(conn=None):
             "total_credits_required": program_row["total_credits_required"],
             "tracks": [t["code"] for t in track_rows],
             "track_names_ar": {t["code"]: t["name_ar"] for t in track_rows},
+            # English labels; only present for tracks that set one (falls back to
+            # the track code in the UI otherwise).
+            "track_names_en": {
+                t["code"]: t["name_en"] for t in track_rows if t["name_en"]
+            },
+            # Per-track graduation total; falls back to the program-global value
+            # above for any track that predates this column.
+            "track_total_credits": {
+                t["code"]: t["total_credits_required"] for t in track_rows
+            },
         }
 
         course_rows = conn.execute(
             "SELECT code, code_en, title_ar, title_en, credits, category, min_credits, verified FROM courses"
         ).fetchall()
-        prereqs_by_course = defaultdict(list)
+        # Global (track-agnostic) prereqs, plus per-track overrides from
+        # course_track_prereqs. A track's scoped set fully replaces the global
+        # one for that track (see app.effective_prereqs).
+        global_prereqs = defaultdict(list)
         for r in conn.execute("SELECT course_code, prereq_code FROM course_prereqs"):
-            prereqs_by_course[r["course_code"]].append(r["prereq_code"])
+            global_prereqs[r["course_code"]].append(r["prereq_code"])
+        track_prereqs = defaultdict(lambda: defaultdict(list))
+        if conn.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='course_track_prereqs'"
+        ).fetchone():
+            for r in conn.execute(
+                "SELECT course_code, track_code, prereq_code FROM course_track_prereqs"
+            ):
+                track_prereqs[r["course_code"]][r["track_code"]].append(r["prereq_code"])
         coreqs_by_course = defaultdict(list)
         for r in conn.execute("SELECT course_code, coreq_code FROM course_coreqs"):
             coreqs_by_course[r["course_code"]].append(r["coreq_code"])
@@ -60,7 +83,8 @@ def load_data_from_db(conn=None):
                 "credits": r["credits"],
                 "category": r["category"],
                 "requirements": {
-                    "courses": prereqs_by_course.get(r["code"], []),
+                    "courses": global_prereqs.get(r["code"], []),
+                    "prereqs_by_track": dict(track_prereqs.get(r["code"], {})),
                     "min_credits": r["min_credits"],
                     "coreqs": coreqs_by_course.get(r["code"], []),
                 },
