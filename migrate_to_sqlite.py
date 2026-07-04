@@ -9,12 +9,22 @@ Insert order matters and is deliberately: program -> tracks -> courses
 references courses (prereqs/coreqs/degree_plan_entries/elective
 groups+options/students). Since nothing upstream ever references a
 downstream table, no deferred foreign keys are needed.
+
+Also supports `--apply-pending`: idempotently (re-)applies every
+migration/*.sql file to an EXISTING database, skipping any statement
+that's already in effect (table/column/index already exists). This is
+what entrypoint.sh runs on every container boot, so a deployed volume's
+DB (which persists across redeploys — see entrypoint.sh) picks up
+schema changes shipped in a new image without wiping the admin-authored
+data on it. Without this, a volume's DB predating a new migration
+crashes the app at import time with `OperationalError: no such column`.
 """
 
 import argparse
 import glob
 import json
 import os
+import sqlite3
 import sys
 
 from data_layer import DB_PATH, connect, load_data_from_db
@@ -34,6 +44,40 @@ def apply_schema(conn):
     table creation order needed to satisfy foreign-key dependencies)."""
     for path in sorted(glob.glob(os.path.join(MIGRATION_DIR, "*.sql"))):
         conn.executescript(open(path, encoding="utf-8").read())
+
+
+# Error messages SQLite raises for a DDL statement that's already been
+# applied — safe to ignore since it means this exact change already exists.
+_ALREADY_APPLIED = ("already exists", "duplicate column name")
+
+
+def _statements(sql):
+    """Split a migration file into individual statements. Comments are `--`
+    line comments only (no migration file uses block comments), so strip
+    those first — otherwise a comment that happens to use ';' as punctuation
+    (e.g. migration/013's "...frontend; with multiple majors...") would be
+    mistaken for a statement terminator."""
+    without_comments = "\n".join(line.split("--", 1)[0] for line in sql.splitlines())
+    return [s.strip() for s in without_comments.split(";") if s.strip()]
+
+
+def apply_pending_schema(conn):
+    """Idempotently bring `conn` up to date with every migration/*.sql file,
+    tolerating statements that are already in effect. Unlike apply_schema()
+    (which assumes a brand-new, empty database and lets any error propagate),
+    this is safe to run against a database that already has some or all of
+    the schema — each migration file's statements are executed one at a time
+    so that an already-applied statement earlier in a file (e.g. an old
+    CREATE TABLE) doesn't block a genuinely new statement later in the same
+    file (e.g. a newly added ALTER TABLE ... ADD COLUMN)."""
+    for path in sorted(glob.glob(os.path.join(MIGRATION_DIR, "*.sql"))):
+        for stmt in _statements(open(path, encoding="utf-8").read()):
+            try:
+                conn.execute(stmt)
+            except sqlite3.OperationalError as e:
+                if not any(msg in str(e) for msg in _ALREADY_APPLIED):
+                    raise
+    conn.commit()
 
 
 def migrate(data, conn):
@@ -148,7 +192,20 @@ def self_verify(original, conn):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--force", action="store_true", help="overwrite an existing course_planner.db")
+    parser.add_argument("--apply-pending", action="store_true",
+                         help="idempotently sync an EXISTING database's schema with migration/*.sql "
+                              "and exit (does not touch courses.json or seed data)")
     args = parser.parse_args()
+
+    if args.apply_pending:
+        if not os.path.exists(DB_PATH):
+            raise SystemExit(f"{DB_PATH} does not exist — nothing to sync (use a plain run to seed it).")
+        conn = connect()
+        try:
+            apply_pending_schema(conn)
+        finally:
+            conn.close()
+        return
 
     if os.path.exists(DB_PATH):
         if not args.force:
