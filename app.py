@@ -22,9 +22,11 @@ Run:
     python app.py selftest                    # acceptance checks (no API key needed)
 """
 
+import datetime
 import os
 import re
 import tempfile
+from collections import defaultdict
 
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request, send_from_directory
@@ -364,6 +366,308 @@ def build_plan_view(completed, credits, track):
     }
 
 
+# ===========================================================================
+# Pounce-inspired forward-looking features (all deterministic — no LLM, no API
+# key). Georgia State's Pounce turned each student's OWN progress data into
+# proactive, personalized guidance; sanad already computes that data, so these
+# three features (roadmap / nudges / what-if) just project it forward. Every
+# course scheduled below is drawn from `eligible_now`, so a roadmap can NEVER
+# place a course before its prerequisites — the engine stays the source of truth.
+# ===========================================================================
+
+# Term/registration calendar — demo constants (no external calendar service).
+# Two planning terms per academic year: Fall, then Spring of the next year.
+START_YEAR = 2026
+DEFAULT_TERM_CREDITS = 15                 # typical full-time load
+REGISTRATION_OPEN_DATE = datetime.date(2026, 8, 10)
+
+
+def term_label(idx, lang="en"):
+    """Season+year label for the idx-th planned term (0 = next term = Fall 2026)."""
+    season = (["خريف", "ربيع"] if lang == "ar" else ["Fall", "Spring"])[idx % 2]
+    year = START_YEAR + (idx + 1) // 2     # Fall 2026, Spring 2027, Fall 2027, ...
+    return f"{season} {year}"
+
+
+def days_until_registration():
+    """Countdown to the demo registration date (>=0), for the urgency nudge."""
+    return max(0, (REGISTRATION_OPEN_DATE - datetime.date.today()).days)
+
+
+def build_unlock_scores(completed, track):
+    """For each still-needed required course, how many OTHER still-needed required
+    courses transitively depend on it (a "gateway"/bottleneck score). Built from
+    `effective_prereqs` over the track's remaining required set."""
+    completed_set = set(normalize_completed(completed))
+    track = valid_track(track)
+    remaining = [c for c in remaining_required(completed_set, track) if c in COURSES]
+    remaining_set = set(remaining)
+
+    dependents = defaultdict(set)          # prereq -> {courses that need it}
+    for c in remaining:
+        for p in effective_prereqs(c, track):
+            if p in remaining_set:
+                dependents[p].add(c)
+
+    scores = {}
+    for c in remaining:
+        seen, stack = set(), list(dependents.get(c, ()))
+        while stack:
+            d = stack.pop()
+            if d in seen:
+                continue
+            seen.add(d)
+            stack.extend(dependents.get(d, ()))
+        scores[c] = len(seen)
+    return scores
+
+
+def build_bottlenecks(completed, credits, track, top=6):
+    """Ranked gateway courses (highest unlock score first) with whether each is
+    takeable now — powers the 'unlocks N' badges and the priority nudge."""
+    completed_set = set(normalize_completed(completed))
+    track = valid_track(track)
+    scores = build_unlock_scores(completed_set, track)
+    elig_set = set(eligible_now(completed_set, credits, track))
+    ranked = sorted(
+        (c for c, n in scores.items() if n > 0),
+        key=lambda c: (-scores[c], COURSES[c]["code"]),
+    )
+    out = []
+    for c in ranked[:top]:
+        v = _view(c)
+        v["unlock_score"] = scores[c]
+        v["eligible_now"] = c in elig_set
+        out.append(v)
+    return out
+
+
+def _gap_option_codes(completed_set, track):
+    """Elective-option courses that still count toward an unmet elective group."""
+    codes = set()
+    for g in DB["elective_groups"][track]:
+        done = sum(COURSES[c]["credits"] for c in g["options"] if c in completed_set)
+        if done < g["choose_credits"]:
+            codes.update(o for o in g["options"] if o in COURSES and o not in completed_set)
+    return codes
+
+
+def build_roadmap(completed, credits, track,
+                  max_credits_per_term=DEFAULT_TERM_CREDITS, defer=None):
+    """Greedy term-by-term schedule to graduation. Each term only picks from
+    `eligible_now`, prioritising remaining-required gateways, then unmet elective
+    options, packing up to `max_credits_per_term` credits (co-requisites travel
+    together). `defer` pushes the given courses out of the FIRST term only (used
+    by the what-if simulator). Returns the term list + projected graduation."""
+    completed = normalize_completed(completed)
+    completed_set = set(completed)
+    track = valid_track(track)
+    credits = int(credits)
+    total = total_for(track)
+    defer_set = set(normalize_completed(defer or []))
+    start_credits = credits
+
+    MAX_TERMS = 16
+    terms, stalled = [], False
+    while True:
+        rem = [c for c in remaining_required(completed_set, track) if c in COURSES]
+        gaps = elective_gaps(completed_set, track)
+        if (not rem and not gaps and credits >= total) or len(terms) >= MAX_TERMS:
+            break
+
+        elig = eligible_now(completed_set, credits, track)
+        scores = build_unlock_scores(completed_set, track)
+        rem_set = set(rem)
+        gap_codes = _gap_option_codes(completed_set, track)
+
+        def rank_key(c):
+            tier = 0 if c in rem_set else (1 if c in gap_codes else 2)
+            return (tier, -scores.get(c, 0), -COURSES[c]["credits"], COURSES[c]["code"])
+
+        ranked = sorted(elig, key=rank_key)
+        if terms == [] and defer_set:                 # defer applies to term 1 only
+            ranked = [c for c in ranked if c not in defer_set]
+
+        chosen, chosen_set, term_credits = [], set(), 0
+        for c in ranked:
+            if c in chosen_set:
+                continue
+            bundle = [c] + [co for co in COURSES[c]["requirements"]["coreqs"]
+                            if co in COURSES and co not in completed_set and co not in chosen_set]
+            bcr = sum(COURSES[x]["credits"] for x in bundle)
+            if term_credits + bcr > max_credits_per_term and chosen:
+                continue                               # full — leave the rest for later
+            for x in bundle:
+                if x not in chosen_set:
+                    chosen.append(x)
+                    chosen_set.add(x)
+            term_credits += bcr
+
+        if not chosen:                                 # no progress possible (data gap)
+            stalled = True
+            break
+
+        completed_set.update(chosen_set)
+        credits += term_credits
+        terms.append({
+            "term_label": term_label(len(terms)),
+            "term_label_ar": term_label(len(terms), "ar"),
+            "term_credits": term_credits,
+            "courses": [{**_view(c), "unlock_score": scores.get(c, 0)} for c in chosen],
+        })
+
+    rem = [c for c in remaining_required(completed_set, track) if c in COURSES]
+    gaps = elective_gaps(completed_set, track)
+    complete = not rem and not gaps and credits >= total
+    return {
+        "track": track,
+        "track_name_ar": TRACK_NAMES_AR.get(track, track),
+        "start_credits": start_credits,
+        "total_required": total,
+        "terms": terms,
+        "projected_terms": len(terms),
+        "projected_grad": terms[-1]["term_label"] if terms else None,
+        "projected_grad_ar": terms[-1]["term_label_ar"] if terms else None,
+        "credits_remaining_after": max(0, total - credits),
+        "complete": complete,
+        "stalled": stalled,
+        "max_credits_per_term": max_credits_per_term,
+    }
+
+
+def _t(lang, en, ar):
+    return ar if lang == "ar" else en
+
+
+def build_nudges(completed, credits, track, lang="en"):
+    """Ranked, personalized 'smart nudge' cards — Pounce's signature mechanic,
+    delivered in-app. Every card is derived from the deterministic record; none
+    are invented by the model."""
+    rec = build_advising_record(completed, credits, track)
+    completed_set = set(normalize_completed(completed))
+    track = valid_track(track)
+    roadmap = build_roadmap(completed, credits, track)
+    bottlenecks = build_bottlenecks(completed, credits, track)
+    elig = rec["eligible_now"]
+    nudges = []
+
+    def caveat(view):
+        return "" if view.get("verified", True) else _t(
+            lang, " (not yet verified — confirm with your advisor)",
+            " (غير مُتحقق منه بعد — تأكّد مع مرشدك)")
+
+    # 1) Registration urgency (the melt-prevention nudge).
+    days = days_until_registration()
+    next_term = term_label(0, lang)
+    nudges.append({
+        "type": "registration", "icon": "🗓️", "priority": 10,
+        "title": _t(lang, f"Registration opens in {days} days",
+                    f"يبدأ التسجيل خلال {days} يومًا"),
+        "body": _t(lang,
+                   f"You have {len(elig)} course(s) ready to take for {next_term}. "
+                   "Open your roadmap to lock in the term.",
+                   f"لديك {len(elig)} مقرر(ات) جاهزة لفصل {next_term}. "
+                   "افتح خطتك لتثبيت مقررات الفصل."),
+        "action": {"view": "roadmap",
+                   "label": _t(lang, "Show my roadmap", "اعرض خطتي")},
+    })
+
+    # 2) Bottleneck priority — take the biggest gateway you can take now.
+    top = next((b for b in bottlenecks if b["eligible_now"]), None)
+    if top:
+        nudges.append({
+            "type": "bottleneck", "icon": "🔑", "priority": 9,
+            "title": _t(lang, f"Prioritize {top['code']} this term",
+                        f"قدِّم {top['code']} هذا الفصل"),
+            "body": _t(lang,
+                       f"{top['code']} — {top['title_en']} unlocks "
+                       f"{top['unlock_score']} later required course(s). "
+                       "Taking it now keeps you on the fastest path." + caveat(top),
+                       f"{top['code']} — {top['title_ar']} يفتح "
+                       f"{top['unlock_score']} مقرر(ات) لاحقة مطلوبة. "
+                       "أخذه الآن يبقيك على أسرع مسار." + caveat(top)),
+            "action": {"view": "advisor",
+                       "label": _t(lang, "Ask the advisor", "اسأل المرشد"),
+                       "payload": {"code": top["code"]}},
+        })
+
+    # 3) Almost there — the progress/encouragement nudge.
+    nudges.append({
+        "type": "progress", "icon": "🎓", "priority": 7,
+        "title": _t(lang,
+                    f"{rec['credits_remaining']} credits to graduation",
+                    f"{rec['credits_remaining']} ساعة حتى التخرج"),
+        "body": _t(lang,
+                   f"About {roadmap['projected_terms']} term(s) left — "
+                   f"projected graduation {roadmap['projected_grad']}."
+                   if roadmap["projected_grad"] else
+                   "You've completed all requirements — congratulations!",
+                   f"يتبقى نحو {roadmap['projected_terms']} فصل — "
+                   f"التخرج المتوقع {roadmap['projected_grad_ar']}."
+                   if roadmap["projected_grad"] else
+                   "أكملت جميع المتطلبات — مبارك!"),
+        "action": {"view": "roadmap",
+                   "label": _t(lang, "See the plan", "شاهد الخطة")},
+    })
+
+    # 4) Elective gap — largest unmet elective group.
+    if rec["elective_gaps"]:
+        g = max(rec["elective_gaps"], key=lambda x: x["remaining_credits"])
+        nudges.append({
+            "type": "elective", "icon": "🧩", "priority": 6,
+            "title": _t(lang, f"{g['remaining_credits']} elective credits needed",
+                        f"تحتاج {g['remaining_credits']} ساعة اختيارية"),
+            "body": _t(lang,
+                       f"Group “{g['group']}”: {g['done_credits']} of "
+                       f"{g['choose_credits']} credits done.",
+                       f"مجموعة «{g['group_ar']}»: أنجزت {g['done_credits']} من "
+                       f"{g['choose_credits']} ساعة."),
+            "action": {"view": "advisor",
+                       "label": _t(lang, "Find electives", "اقترح اختيارية")},
+        })
+
+    # 5) Blocked-course unlock path — a locked course whose missing prereq is takeable now.
+    elig_codes = {c["code"] for c in elig}
+    for b in rec["remaining_required_blocked"]:
+        avail = [mc for mc in b["missing_courses"] if mc in elig_codes]
+        if avail:
+            mc = avail[0]
+            nudges.append({
+                "type": "unlock_path", "icon": "🚀", "priority": 5,
+                "title": _t(lang, f"Unlock {b['code']} sooner",
+                            f"افتح {b['code']} مبكرًا"),
+                "body": _t(lang,
+                           f"{b['code']} — {b['title_en']} is blocked by "
+                           f"{mc} — {COURSES[mc]['title_en']}, which you can take now.",
+                           f"{b['code']} — {b['title_ar']} محجوب بـ "
+                           f"{mc} — {COURSES[mc]['title_ar']}، ويمكنك أخذه الآن."),
+                "action": {"view": "advisor",
+                           "label": _t(lang, "Ask the advisor", "اسأل المرشد"),
+                           "payload": {"code": mc}},
+            })
+            break
+
+    # 6) Human escalation (Pounce always offered a real person) — prefilled summary.
+    top_elig = ", ".join(c["code"] for c in elig[:5]) or _t(lang, "none yet", "لا يوجد بعد")
+    summary = _t(lang,
+                 f"Track: {rec['track']} • Completed: {rec['completed_credits']}/"
+                 f"{rec['total_required']} cr • Eligible now: {top_elig}",
+                 f"المسار: {rec['track']} • المُنجز: {rec['completed_credits']}/"
+                 f"{rec['total_required']} ساعة • المتاح الآن: {top_elig}")
+    nudges.append({
+        "type": "escalation", "icon": "🧑‍🏫", "priority": 1,
+        "title": _t(lang, "Talk to a human advisor", "تواصل مع مرشد بشري"),
+        "body": _t(lang,
+                   "Copy this summary into your advising request:\n" + summary,
+                   "انسخ هذا الملخص في طلب الإرشاد:\n" + summary),
+        "action": {"view": "copy", "label": _t(lang, "Copy summary", "انسخ الملخص"),
+                   "payload": {"summary": summary}},
+    })
+
+    nudges.sort(key=lambda n: -n["priority"])
+    return nudges
+
+
 SYSTEM_PROMPT_BASE = """You are the academic advising assistant for the BSc in Computer Science at the College of Computer and Information Sciences (CCIS), King Saud University (KSU). You help students plan which courses to take, for their chosen track (general / AI / cyber security).
 
 HOW YOU MUST WORK (non-negotiable):
@@ -546,6 +850,60 @@ def plan():
     return jsonify(build_plan_view(completed, credits, track))
 
 
+@app.post("/roadmap")
+def roadmap():
+    """Term-by-term path to graduation + gateway bottlenecks + unlock scores for
+    badging. Pure engine — no API key."""
+    data = request.get_json(force=True, silent=True) or {}
+    completed = data.get("completed", [])
+    track = valid_track(data.get("track", DEFAULT_TRACK))
+    credits = resolve_credits(completed, data.get("completed_credits"))
+    return jsonify({
+        "roadmap": build_roadmap(completed, credits, track),
+        "bottlenecks": build_bottlenecks(completed, credits, track),
+        "unlock_scores": build_unlock_scores(completed, track),
+    })
+
+
+@app.post("/nudges")
+def nudges():
+    """Ranked, personalized in-app nudge cards (Pounce's signature). Pure engine."""
+    data = request.get_json(force=True, silent=True) or {}
+    completed = data.get("completed", [])
+    track = valid_track(data.get("track", DEFAULT_TRACK))
+    lang = data.get("lang", "en")
+    credits = resolve_credits(completed, data.get("completed_credits"))
+    return jsonify({"nudges": build_nudges(completed, credits, track, lang)})
+
+
+@app.post("/whatif")
+def whatif():
+    """Re-simulate the roadmap under a modification (defer courses and/or change
+    the per-term credit cap) and return the graduation delta. Pure engine."""
+    data = request.get_json(force=True, silent=True) or {}
+    completed = data.get("completed", [])
+    track = valid_track(data.get("track", DEFAULT_TRACK))
+    credits = resolve_credits(completed, data.get("completed_credits"))
+    defer = data.get("defer", [])
+    cap = data.get("max_credits_per_term", DEFAULT_TERM_CREDITS)
+    try:
+        cap = max(3, min(21, int(cap)))
+    except (TypeError, ValueError):
+        cap = DEFAULT_TERM_CREDITS
+
+    base = build_roadmap(completed, credits, track)
+    new = build_roadmap(completed, credits, track, max_credits_per_term=cap, defer=defer)
+    return jsonify({
+        "base": base,
+        "new": new,
+        "delta_terms": new["projected_terms"] - base["projected_terms"],
+        "base_grad": base["projected_grad"],
+        "new_grad": new["projected_grad"],
+        "base_grad_ar": base["projected_grad_ar"],
+        "new_grad_ar": new["projected_grad_ar"],
+    })
+
+
 @app.post("/chat")
 def chat():
     data = request.get_json(force=True, silent=True) or {}
@@ -660,6 +1018,54 @@ def run_selftest():
                   f"completed count={len(body.get('completed', []))}")
     else:
         print("  [SKIP] set TRANSCRIPT_PDF=/path/to/record.pdf to run this check.")
+    print()
+
+    # ---- Test 5: roadmap / bottlenecks / what-if (Pounce-inspired features) ----
+    print("Test 5 — roadmap & what-if (demo_early, ai, 59 cr):")
+    s = STUDENTS["demo_early"]
+    comp = list(normalize_completed(s["completed"]))
+    cr = s["completed_credits"]
+    rm = build_roadmap(comp, cr, "ai")
+    check("roadmap terminates and reaches graduation (credits_remaining_after == 0)",
+          rm["complete"] and rm["credits_remaining_after"] == 0 and not rm["stalled"],
+          f"terms={rm['projected_terms']}, grad={rm['projected_grad']}, "
+          f"remaining_after={rm['credits_remaining_after']}, stalled={rm['stalled']}")
+
+    # Every course is prereq-valid IN ITS TERM: replay the schedule and assert
+    # each course was eligible at the moment it was placed. This is the core
+    # "never schedule a course before its prerequisites" guarantee.
+    replay, rcred, valid_schedule = set(comp), cr, True
+    for t in rm["terms"]:
+        codes = [c["code"] for c in t["courses"]]
+        for code in codes:
+            if not is_eligible(code, replay, rcred, "ai"):
+                valid_schedule = False
+        replay.update(codes)
+        rcred += t["term_credits"]
+    check("every roadmap course was eligible in its own term", valid_schedule)
+
+    check("no term exceeds the credit cap (15)",
+          all(t["term_credits"] <= DEFAULT_TERM_CREDITS for t in rm["terms"]),
+          f"term credits: {[t['term_credits'] for t in rm['terms']]}")
+
+    bn = build_bottlenecks(comp, cr, "ai")
+    check("bottlenecks are ranked by unlock score (desc)",
+          all(bn[i]["unlock_score"] >= bn[i + 1]["unlock_score"] for i in range(len(bn) - 1)),
+          f"top bottleneck: {bn[0]['code']} unlocks {bn[0]['unlock_score']}" if bn else "none")
+
+    # Deferring the top eligible gateway must not graduate the student SOONER.
+    top_gate = next((b["code"] for b in bn if b["eligible_now"]), None)
+    if top_gate:
+        deferred = build_roadmap(comp, cr, "ai", defer=[top_gate])
+        check(f"deferring gateway {top_gate} does not shorten the plan",
+              deferred["projected_terms"] >= rm["projected_terms"],
+              f"base={rm['projected_terms']} terms, deferred={deferred['projected_terms']} terms")
+
+    nd = build_nudges(comp, cr, "ai", "en")
+    check("nudges are produced and ranked by priority (desc)",
+          len(nd) >= 3 and all(nd[i]["priority"] >= nd[i + 1]["priority"]
+                               for i in range(len(nd) - 1)),
+          f"{len(nd)} nudges: {', '.join(n['type'] for n in nd)}")
     print()
 
     passed = sum(1 for r in results if r)

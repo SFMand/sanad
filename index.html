@@ -1312,13 +1312,385 @@
       border-radius: 6px;
     }
 
+    /* ---- Pounce-inspired features: bell, roadmap, what-if, nudges ---------- */
+    .badge.gateway {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      background: rgba(245, 166, 35, .16);
+      color: var(--accent);
+    }
+    .badge.gateway .ic {
+      width: 12px;
+      height: 12px;
+    }
+
+    /* Notification bell */
+    .bell {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      flex: none;
+      border-radius: var(--r-sm);
+      background: var(--bg);
+      border: 1px solid var(--line);
+      color: var(--ink);
+      cursor: pointer;
+      transition: border-color var(--dur) var(--ease), color var(--dur) var(--ease);
+    }
+    .bell:hover {
+      border-color: var(--muted);
+      color: var(--primary);
+    }
+    .bell .ic {
+      width: 20px;
+      height: 20px;
+    }
+    .bell-badge {
+      position: absolute;
+      top: -5px;
+      inset-inline-end: -5px;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 5px;
+      border-radius: var(--r-pill);
+      background: var(--accent);
+      color: var(--accent-ink);
+      font-size: .68rem;
+      font-weight: 800;
+      line-height: 18px;
+      text-align: center;
+      box-shadow: 0 0 0 2px var(--panel);
+    }
+
+    /* Graduation banner */
+    .grad-banner {
+      display: none;
+    }
+    .grad-banner.show {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-3);
+      padding: var(--sp-4) var(--sp-5);
+      margin-bottom: var(--sp-4);
+      border-radius: var(--r-md);
+      border: 1px solid var(--line);
+      background: linear-gradient(135deg, rgba(94, 234, 212, .12), rgba(245, 166, 35, .10));
+    }
+    .grad-banner .ic {
+      width: 28px;
+      height: 28px;
+      color: var(--primary);
+      flex: none;
+    }
+    .grad-banner.warn {
+      background: var(--warn-bg);
+      border-color: rgba(245, 166, 35, .35);
+    }
+    .grad-banner.warn .ic {
+      color: var(--warn);
+    }
+    .grad-main {
+      font-family: var(--font-head);
+      font-size: var(--fs-lg);
+      font-weight: 600;
+      letter-spacing: -.01em;
+    }
+    .grad-sub {
+      color: var(--muted);
+      font-size: var(--fs-sm);
+      margin-top: 2px;
+    }
+
+    /* What-if simulator */
+    .whatif {
+      border: 1px solid var(--line);
+      border-radius: var(--r-md);
+      padding: var(--sp-4);
+      margin-bottom: var(--sp-4);
+      background: var(--raised);
+    }
+    .whatif-head h3 {
+      font-size: var(--fs-md);
+      font-weight: 600;
+    }
+    .whatif-head p {
+      color: var(--muted);
+      font-size: var(--fs-sm);
+      margin: 2px 0 var(--sp-3);
+    }
+    .whatif-row {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-3);
+      flex-wrap: wrap;
+      margin-bottom: var(--sp-3);
+      font-size: var(--fs-sm);
+    }
+    .whatif-row input[type="range"] {
+      flex: 1;
+      min-width: 140px;
+      accent-color: var(--primary);
+    }
+    .whatif-row output {
+      font-weight: 700;
+      min-width: 2ch;
+      text-align: center;
+    }
+    .whatif-defer {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-2);
+      flex-wrap: wrap;
+      font-size: var(--fs-sm);
+      color: var(--muted);
+    }
+    .whatif-chips {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .chip-toggle {
+      font-size: var(--fs-xs);
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: var(--r-pill);
+      border: 1px solid var(--line);
+      background: var(--bg);
+      color: var(--ink);
+      cursor: pointer;
+      transition: all var(--dur) var(--ease);
+    }
+    .chip-toggle:hover {
+      border-color: var(--muted);
+    }
+    .chip-toggle.on {
+      background: var(--accent);
+      color: var(--accent-ink);
+      border-color: var(--accent);
+    }
+    .whatif-result {
+      margin-top: var(--sp-3);
+      padding: var(--sp-3);
+      border-radius: var(--r-sm);
+      font-weight: 700;
+      font-size: var(--fs-base);
+      text-align: center;
+    }
+    .whatif-result.same {
+      background: rgba(255, 255, 255, .05);
+      color: var(--muted);
+    }
+    .whatif-result.better {
+      background: rgba(74, 222, 128, .14);
+      color: var(--eligible);
+    }
+    .whatif-result.worse {
+      background: rgba(248, 113, 113, .14);
+      color: var(--danger);
+    }
+
+    /* Roadmap timeline */
+    .roadmap-scroll {
+      overflow-x: auto;
+    }
+    .timeline {
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: minmax(190px, 1fr);
+      gap: var(--sp-3);
+      align-items: start;
+    }
+    .term {
+      border: 1px solid var(--line);
+      border-radius: var(--r-md);
+      background: var(--panel);
+      padding: var(--sp-3);
+      min-width: 190px;
+    }
+    .term-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: var(--sp-2);
+      padding-bottom: var(--sp-2);
+      margin-bottom: var(--sp-2);
+      border-bottom: 1px solid var(--line);
+    }
+    .term-name {
+      font-family: var(--font-head);
+      font-weight: 600;
+      font-size: var(--fs-sm);
+    }
+    .term-cr {
+      font-size: var(--fs-xs);
+      color: var(--muted);
+      font-weight: 700;
+    }
+    .term-course {
+      border: 1px solid var(--line);
+      border-radius: var(--r-sm);
+      background: var(--raised);
+      padding: 7px 9px;
+      margin-bottom: 6px;
+    }
+    .tc-top {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 6px;
+    }
+    .tc-code {
+      font-weight: 700;
+      font-size: var(--fs-sm);
+    }
+    .tc-cr {
+      font-size: var(--fs-xs);
+      color: var(--muted);
+    }
+    .tc-title {
+      font-size: var(--fs-xs);
+      color: var(--muted);
+      margin-top: 2px;
+      line-height: 1.35;
+    }
+    .tc-badges {
+      margin-top: 5px;
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+    .tc-badges .badge {
+      margin-inline-start: 0;
+    }
+    .roadmap-empty {
+      color: var(--muted);
+      text-align: center;
+      padding: var(--sp-8) var(--sp-4);
+    }
+
+    /* Nudge tray */
+    .nudge-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .45);
+      z-index: 40;
+    }
+    .nudge-tray {
+      position: fixed;
+      top: 0;
+      inset-inline-end: 0;
+      height: 100%;
+      width: min(380px, 90vw);
+      background: var(--panel);
+      border-inline-start: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      z-index: 41;
+      display: flex;
+      flex-direction: column;
+      transform: translateX(100%);
+      transition: transform .22s var(--ease);
+    }
+    :root[dir="rtl"] .nudge-tray,
+    [dir="rtl"] .nudge-tray {
+      transform: translateX(-100%);
+    }
+    .nudge-tray.open {
+      transform: translateX(0);
+    }
+    .nudge-tray-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--sp-4) var(--sp-4) var(--sp-3);
+      border-bottom: 1px solid var(--line);
+    }
+    .nudge-tray-head h2 {
+      font-size: var(--fs-md);
+      font-weight: 600;
+    }
+    .nudge-close {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 1.5rem;
+      line-height: 1;
+      cursor: pointer;
+      padding: 0 6px;
+    }
+    .nudge-close:hover {
+      color: var(--ink);
+    }
+    .nudge-list {
+      overflow-y: auto;
+      padding: var(--sp-3);
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-3);
+    }
+    .nudge-card {
+      display: flex;
+      gap: var(--sp-3);
+      padding: var(--sp-3);
+      border: 1px solid var(--line);
+      border-radius: var(--r-md);
+      background: var(--raised);
+      border-inline-start: 3px solid var(--primary);
+    }
+    .nudge-registration { border-inline-start-color: var(--accent); }
+    .nudge-bottleneck { border-inline-start-color: var(--accent); }
+    .nudge-progress { border-inline-start-color: var(--primary); }
+    .nudge-elective { border-inline-start-color: var(--warn); }
+    .nudge-unlock_path { border-inline-start-color: var(--eligible); }
+    .nudge-escalation { border-inline-start-color: var(--muted); }
+    .nudge-ic {
+      font-size: 1.25rem;
+      line-height: 1.3;
+      flex: none;
+    }
+    .nudge-title {
+      font-weight: 700;
+      font-size: var(--fs-sm);
+      margin-bottom: 3px;
+    }
+    .nudge-text {
+      color: var(--muted);
+      font-size: var(--fs-sm);
+      line-height: 1.45;
+      white-space: pre-line;
+    }
+    .nudge-action {
+      margin-top: var(--sp-2);
+      font-size: var(--fs-xs);
+      font-weight: 700;
+      padding: 5px 12px;
+      border-radius: var(--r-pill);
+      border: 1px solid var(--primary);
+      background: transparent;
+      color: var(--primary);
+      cursor: pointer;
+      transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+    }
+    .nudge-action:hover {
+      background: var(--primary);
+      color: var(--primary-ink);
+    }
+    .nudge-empty {
+      color: var(--muted);
+      text-align: center;
+      padding: var(--sp-6) var(--sp-4);
+    }
+
     @media (max-width: 820px) {
       .semesters {
         grid-template-columns: 1fr;
       }
 
       .viewtabs button {
-        min-width: 96px;
+        min-width: 80px;
       }
     }
 
@@ -1352,6 +1724,10 @@
         <div class="progress-fill" id="progressFill"></div>
       </div>
     </div>
+    <button class="bell" id="nudgeBell" aria-label="Notifications" aria-expanded="false" aria-controls="nudgeTray">
+      <span class="bell-ic" id="bellIc" aria-hidden="true"></span>
+      <span class="bell-badge" id="bellBadge" hidden>0</span>
+    </button>
     <div class="seg-toggle" role="group" aria-label="Language / اللغة">
       <button id="langEn" data-lang="en" aria-pressed="true">EN</button>
       <button id="langAr" data-lang="ar" aria-pressed="false">ع</button>
@@ -1361,6 +1737,7 @@
   <main>
     <div class="seg-toggle viewtabs" id="viewTabs" role="tablist" aria-label="View">
       <button id="tabPlan" data-view="plan" role="tab" aria-selected="true" aria-pressed="true">Plan</button>
+      <button id="tabRoadmap" data-view="roadmap" role="tab" aria-selected="false" aria-pressed="false">Roadmap</button>
       <button id="tabAdvisor" data-view="advisor" role="tab" aria-selected="false" aria-pressed="false">Advisor</button>
     </div>
 
@@ -1416,8 +1793,49 @@
           <button class="btn primary" id="sendBtn" type="submit">Send</button>
         </form>
       </section>
+
+      <section class="panel view" id="roadmapView" role="tabpanel" aria-labelledby="roadmapHeading">
+        <div class="panel-head">
+          <h2 id="roadmapHeading">Path to graduation</h2>
+          <p id="roadmapHelp">Your term-by-term plan, generated from what you can take next.</p>
+        </div>
+
+        <div class="grad-banner" id="gradBanner"></div>
+
+        <div class="whatif" id="whatifPanel">
+          <div class="whatif-head">
+            <h3 id="whatifTitle">What-if simulator</h3>
+            <p id="whatifHelp">See how choices change your graduation date.</p>
+          </div>
+          <div class="whatif-controls">
+            <label class="whatif-row" for="capRange">
+              <span id="capLabel">Credits per term</span>
+              <input type="range" id="capRange" min="9" max="21" step="3" value="15" />
+              <output id="capOut">15</output>
+            </label>
+            <div class="whatif-defer">
+              <span id="deferLabel">Delay a course:</span>
+              <div class="whatif-chips" id="deferChips"></div>
+            </div>
+          </div>
+          <div class="whatif-result" id="whatifResult" hidden></div>
+        </div>
+
+        <div class="roadmap-scroll">
+          <div class="timeline" id="timeline"></div>
+        </div>
+      </section>
     </div>
   </main>
+
+  <aside class="nudge-tray" id="nudgeTray" aria-label="Notifications" hidden>
+    <div class="nudge-tray-head">
+      <h2 id="nudgeTrayTitle">For you</h2>
+      <button class="nudge-close" id="nudgeClose" aria-label="Close">&times;</button>
+    </div>
+    <div class="nudge-list" id="nudgeList"></div>
+  </aside>
+  <div class="nudge-backdrop" id="nudgeBackdrop" hidden></div>
 
   <footer>
     <p id="disclaimer">Planning aid only — not a substitute for your official KSU academic advisor.</p>
@@ -1439,7 +1857,10 @@
       "upload": '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/>',
       "send": '<line x1="22" x2="11" y1="2" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>',
       "alert-triangle": '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
-      "sparkles": '<path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .962 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.962 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/>'
+      "sparkles": '<path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .962 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.962 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/>',
+      "bell": '<path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/>',
+      "route": '<circle cx="6" cy="19" r="3"/><path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/><circle cx="18" cy="5" r="3"/>',
+      "flame": '<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>'
     };
     function icon(name, cls) {
       const p = ICON_PATHS[name] || "";
@@ -1474,6 +1895,23 @@
         sendBtn: "Send",
         tabPlan: "Plan",
         tabAdvisor: "Advisor",
+        tabRoadmap: "Roadmap",
+        roadmapHeading: "Path to graduation",
+        roadmapHelp: "Your term-by-term plan, generated from what you can take next.",
+        roadmapEmpty: "Load your transcript or tick some courses to see your path to graduation.",
+        gradBanner: (term, n) => `Projected graduation: ${term} · ${n} term${n === 1 ? "" : "s"} left`,
+        gradBannerDone: "All requirements complete — you're ready to graduate! 🎉",
+        gradBannerStalled: "Couldn't finish the plan automatically — some data may be missing. Check with your advisor.",
+        unlocksBadge: (n) => `unlocks ${n}`,
+        whatifTitle: "What-if simulator",
+        whatifHelp: "See how your choices change your graduation date.",
+        capLabel: "Credits per term",
+        deferLabel: "Delay a course:",
+        whatifSame: (term) => `Still graduating ${term} — no change.`,
+        whatifDelta: (base, next, d) => `${base} → ${next}  (${d > 0 ? "+" : ""}${d} term${Math.abs(d) === 1 ? "" : "s"})`,
+        nudgeTrayTitle: "For you",
+        nudgeEmpty: "No suggestions right now.",
+        nudgeCopied: "Copied ✓",
         yearLabel: (n) => `Year ${n}`,
         semesterLabel: (n) => `Semester ${n}`,
         legendCompleted: "Completed",
@@ -1533,6 +1971,23 @@
         sendBtn: "إرسال",
         tabPlan: "الخطة",
         tabAdvisor: "المرشد",
+        tabRoadmap: "الخطة الزمنية",
+        roadmapHeading: "المسار إلى التخرج",
+        roadmapHelp: "خطتك فصلًا بفصل، مبنية على ما يمكنك تسجيله تاليًا.",
+        roadmapEmpty: "ارفع سجلك أو حدِّد بعض المقررات لعرض مسارك إلى التخرج.",
+        gradBanner: (term, n) => `التخرج المتوقع: ${term} · يتبقى ${n} فصل`,
+        gradBannerDone: "اكتملت جميع المتطلبات — أنت جاهز للتخرج! 🎉",
+        gradBannerStalled: "تعذّر إكمال الخطة تلقائيًا — قد تكون بعض البيانات ناقصة. راجع مرشدك.",
+        unlocksBadge: (n) => `يفتح ${n}`,
+        whatifTitle: "محاكي «ماذا لو»",
+        whatifHelp: "شاهد كيف تغيّر خياراتك موعد تخرجك.",
+        capLabel: "ساعات كل فصل",
+        deferLabel: "تأجيل مقرر:",
+        whatifSame: (term) => `ما زال التخرج ${term} — لا تغيير.`,
+        whatifDelta: (base, next, d) => `${base} ← ${next}  (${d > 0 ? "+" : ""}${d} فصل)`,
+        nudgeTrayTitle: "من أجلك",
+        nudgeEmpty: "لا توجد اقتراحات الآن.",
+        nudgeCopied: "تم النسخ ✓",
         yearLabel: (n) => `السنة ${n}`,
         semesterLabel: (n) => `الفصل ${n}`,
         legendCompleted: "مُنجز",
@@ -1592,6 +2047,11 @@
       totalRequired: 128,
       plan: null,           // latest /plan response (engine-computed grid state)
       eligibleCodes: [],    // codes eligible now (engine truth) — drives rec cards
+      roadmap: null,        // latest /roadmap response (roadmap + bottlenecks)
+      unlockScores: {},     // code -> gateway/unlock score (badges the grid)
+      nudges: [],           // latest /nudges response
+      whatifCap: 15,        // per-term credit cap for the what-if simulator
+      whatifDefer: new Set(),  // codes deferred in the what-if simulator
       messages: []          // {role:'user'|'assistant', content}
     };
 
@@ -1675,7 +2135,19 @@
       $("reviewCancel").textContent = s.reviewCancel;
       $("disclaimer").textContent = s.disclaimer;
       labelWithIcon("tabPlan", "calendar", s.tabPlan);
+      labelWithIcon("tabRoadmap", "route", s.tabRoadmap);
       labelWithIcon("tabAdvisor", "message-circle", s.tabAdvisor);
+      $("bellIc").innerHTML = icon("bell");
+      $("roadmapHeading").textContent = s.roadmapHeading;
+      $("roadmapHelp").textContent = s.roadmapHelp;
+      $("whatifTitle").textContent = s.whatifTitle;
+      $("whatifHelp").textContent = s.whatifHelp;
+      $("capLabel").textContent = s.capLabel;
+      $("deferLabel").textContent = s.deferLabel;
+      $("nudgeTrayTitle").textContent = s.nudgeTrayTitle;
+      renderRoadmap();
+      if (!$("whatifResult").hidden) runWhatif();  // re-render result in new language
+      refreshNudges();   // nudge copy is language-baked server-side — refetch
       $("langEn").setAttribute("aria-pressed", String(state.lang === "en"));
       $("langAr").setAttribute("aria-pressed", String(state.lang === "ar"));
       renderTrackToggle();
@@ -1688,12 +2160,15 @@
     }
 
     function applyView() {
-      $("planView").classList.toggle("active", state.view === "plan");
-      $("advisorView").classList.toggle("active", state.view === "advisor");
-      $("tabPlan").setAttribute("aria-selected", String(state.view === "plan"));
-      $("tabPlan").setAttribute("aria-pressed", String(state.view === "plan"));
-      $("tabAdvisor").setAttribute("aria-selected", String(state.view === "advisor"));
-      $("tabAdvisor").setAttribute("aria-pressed", String(state.view === "advisor"));
+      const views = { plan: "planView", roadmap: "roadmapView", advisor: "advisorView" };
+      const tabs = { plan: "tabPlan", roadmap: "tabRoadmap", advisor: "tabAdvisor" };
+      Object.entries(views).forEach(([v, id]) => {
+        $(id).classList.toggle("active", state.view === v);
+      });
+      Object.entries(tabs).forEach(([v, id]) => {
+        $(id).setAttribute("aria-selected", String(state.view === v));
+        $(id).setAttribute("aria-pressed", String(state.view === v));
+      });
       if (state.view === "advisor") $("chatInput").focus();
     }
 
@@ -1707,6 +2182,7 @@
         b.setAttribute("aria-pressed", String(track === state.track));
         b.addEventListener("click", () => {
           state.track = track;
+          resetWhatif();
           renderTrackToggle();
           refreshPlan();
         });
@@ -1779,6 +2255,287 @@
       renderPlan();
       renderElectives();
       renderProgress();
+      refreshRoadmap();
+      refreshNudges();
+    }
+
+    // ---- Pounce-inspired features: roadmap, nudges, what-if -------------------
+    // All three read the deterministic engine's forward projection; the UI just
+    // renders it. Refreshed alongside /plan so they always match the grid.
+    async function refreshRoadmap() {
+      try {
+        const res = await fetch("/roadmap", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            completed: Array.from(state.completed),
+            completed_credits: state.completedCredits,
+            track: state.track
+          })
+        });
+        const data = await res.json();
+        if (res.ok && !data.error) {
+          state.roadmap = data.roadmap;
+          state.unlockScores = data.unlock_scores || {};
+        }
+      } catch (_err) { /* keep last good roadmap */ }
+      renderRoadmap();
+      renderPlan();       // re-render grid so gateway badges reflect new scores
+    }
+
+    async function refreshNudges() {
+      try {
+        const res = await fetch("/nudges", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            completed: Array.from(state.completed),
+            completed_credits: state.completedCredits,
+            track: state.track,
+            lang: state.lang
+          })
+        });
+        const data = await res.json();
+        if (res.ok && !data.error) state.nudges = data.nudges || [];
+      } catch (_err) { /* keep last good nudges */ }
+      renderNudges();
+    }
+
+    function renderRoadmap() {
+      const s = t();
+      const tl = $("timeline");
+      const banner = $("gradBanner");
+      if (!tl || !banner) return;
+      const rm = state.roadmap;
+
+      if (!rm || !rm.terms || rm.terms.length === 0) {
+        banner.className = "grad-banner";
+        banner.innerHTML = "";
+        tl.innerHTML = '<p class="roadmap-empty">' +
+          escapeHtml(rm && rm.complete ? s.gradBannerDone : s.roadmapEmpty) + "</p>";
+        renderWhatifControls();
+        return;
+      }
+
+      const gradTerm = state.lang === "ar" ? rm.projected_grad_ar : rm.projected_grad;
+      if (rm.stalled) {
+        banner.className = "grad-banner show warn";
+        banner.innerHTML = icon("alert-triangle") +
+          '<div class="grad-sub">' + escapeHtml(s.gradBannerStalled) + "</div>";
+      } else {
+        banner.className = "grad-banner show";
+        banner.innerHTML = icon("graduation-cap") +
+          '<div><div class="grad-main">' + escapeHtml(gradTerm) + "</div>" +
+          '<div class="grad-sub">' + escapeHtml(s.gradBanner(gradTerm, rm.projected_terms)) + "</div></div>";
+      }
+
+      tl.textContent = "";
+      rm.terms.forEach((term) => {
+        const col = document.createElement("div");
+        col.className = "term";
+        const head = document.createElement("div");
+        head.className = "term-head";
+        const label = state.lang === "ar" ? term.term_label_ar : term.term_label;
+        head.innerHTML = '<span class="term-name">' + escapeHtml(label) + "</span>" +
+          '<span class="term-cr">' + escapeHtml(term.term_credits + " " + s.crSuffix) + "</span>";
+        col.appendChild(head);
+        term.courses.forEach((c) => col.appendChild(makeRoadmapCourse(c)));
+        tl.appendChild(col);
+      });
+      renderWhatifControls();
+    }
+
+    function makeRoadmapCourse(c) {
+      const s = t();
+      const div = document.createElement("div");
+      div.className = "term-course";
+      const top = document.createElement("div");
+      top.className = "tc-top";
+      top.innerHTML = '<span class="tc-code">' + escapeHtml(c.code) + "</span>" +
+        '<span class="tc-cr">' + c.credits + " " + s.crSuffix + "</span>";
+      div.appendChild(top);
+      const title = document.createElement("div");
+      title.className = "tc-title";
+      title.textContent = state.lang === "ar" ? c.title_ar : c.title_en;
+      div.appendChild(title);
+      const badges = document.createElement("div");
+      badges.className = "tc-badges";
+      if (c.unlock_score > 0) {
+        const gb = document.createElement("span");
+        gb.className = "badge gateway";
+        gb.innerHTML = icon("flame") + "<span>" + s.unlocksBadge(c.unlock_score) + "</span>";
+        badges.appendChild(gb);
+      }
+      if (!c.verified) {
+        const uv = document.createElement("span");
+        uv.className = "badge unverified";
+        uv.textContent = s.unverified;
+        badges.appendChild(uv);
+      }
+      if (badges.children.length) div.appendChild(badges);
+      return div;
+    }
+
+    function renderWhatifControls() {
+      $("capOut").textContent = String(state.whatifCap);
+      $("capRange").value = String(state.whatifCap);
+      const wrap = $("deferChips");
+      wrap.textContent = "";
+      const rm = state.roadmap;
+      const firstTerm = (rm && rm.terms && rm.terms[0]) ? rm.terms[0].courses : [];
+      const codes = new Set(firstTerm.map((c) => c.code));
+      Array.from(state.whatifDefer).forEach((c) => { if (!codes.has(c)) state.whatifDefer.delete(c); });
+      firstTerm.forEach((c) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "chip-toggle" + (state.whatifDefer.has(c.code) ? " on" : "");
+        b.textContent = c.code;
+        b.setAttribute("aria-pressed", String(state.whatifDefer.has(c.code)));
+        b.addEventListener("click", () => {
+          if (state.whatifDefer.has(c.code)) state.whatifDefer.delete(c.code);
+          else state.whatifDefer.add(c.code);
+          runWhatif();
+        });
+        wrap.appendChild(b);
+      });
+    }
+
+    async function runWhatif() {
+      renderWhatifControls();
+      const s = t();
+      const out = $("whatifResult");
+      try {
+        const res = await fetch("/whatif", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            completed: Array.from(state.completed),
+            completed_credits: state.completedCredits,
+            track: state.track,
+            defer: Array.from(state.whatifDefer),
+            max_credits_per_term: state.whatifCap
+          })
+        });
+        const data = await res.json();
+        if (!res.ok || data.error) { out.hidden = true; return; }
+        const baseGrad = state.lang === "ar" ? data.base_grad_ar : data.base_grad;
+        const newGrad = state.lang === "ar" ? data.new_grad_ar : data.new_grad;
+        out.hidden = false;
+        if (data.delta_terms === 0) {
+          out.className = "whatif-result same";
+          out.textContent = s.whatifSame(newGrad);
+        } else {
+          out.className = "whatif-result " + (data.delta_terms < 0 ? "better" : "worse");
+          out.textContent = s.whatifDelta(baseGrad, newGrad, data.delta_terms);
+        }
+      } catch (_err) { out.hidden = true; }
+    }
+
+    function renderNudges() {
+      const s = t();
+      const list = $("nudgeList");
+      const badge = $("bellBadge");
+      if (!list) return;
+      const nudges = state.nudges || [];
+      const count = nudges.filter((n) => n.type !== "escalation").length;
+      if (count > 0) { badge.hidden = false; badge.textContent = String(count); }
+      else { badge.hidden = true; }
+      list.textContent = "";
+      if (nudges.length === 0) {
+        list.innerHTML = '<p class="nudge-empty">' + escapeHtml(s.nudgeEmpty) + "</p>";
+        return;
+      }
+      nudges.forEach((n) => list.appendChild(makeNudgeCard(n)));
+    }
+
+    function makeNudgeCard(n) {
+      const card = document.createElement("div");
+      card.className = "nudge-card nudge-" + n.type;
+      const ic = document.createElement("span");
+      ic.className = "nudge-ic";
+      ic.textContent = n.icon || "•";
+      card.appendChild(ic);
+      const body = document.createElement("div");
+      body.className = "nudge-body";
+      const h = document.createElement("div");
+      h.className = "nudge-title";
+      h.textContent = n.title;
+      body.appendChild(h);
+      const p = document.createElement("div");
+      p.className = "nudge-text";
+      p.textContent = n.body;
+      body.appendChild(p);
+      if (n.action && n.action.label) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "nudge-action";
+        btn.textContent = n.action.label;
+        btn.addEventListener("click", (ev) => handleNudgeAction(n, ev.currentTarget));
+        body.appendChild(btn);
+      }
+      card.appendChild(body);
+      return card;
+    }
+
+    function handleNudgeAction(n, btnEl) {
+      const a = n.action || {};
+      if (a.view === "roadmap") {
+        closeNudgeTray(); state.view = "roadmap"; applyView();
+      } else if (a.view === "advisor") {
+        closeNudgeTray(); state.view = "advisor"; applyView();
+        if (a.payload && a.payload.code) {
+          const c = state.byCode[a.payload.code];
+          const name = c ? (state.lang === "ar" ? c.title_ar : c.title_en) : "";
+          const q = state.lang === "ar"
+            ? `حدّثني عن ${a.payload.code}${name ? " — " + name : ""}`
+            : `Tell me about ${a.payload.code}${name ? " — " + name : ""}`;
+          sendChat(q);
+        }
+      } else if (a.view === "copy") {
+        const text = (a.payload && a.payload.summary) || (n.title + "\n" + n.body);
+        copyToClipboard(text, btnEl);
+      }
+    }
+
+    function copyToClipboard(text, btnEl) {
+      const done = () => {
+        if (!btnEl) return;
+        const old = btnEl.textContent;
+        btnEl.textContent = t().nudgeCopied;
+        setTimeout(() => { btnEl.textContent = old; }, 1500);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
+      } else { fallbackCopy(text, done); }
+    }
+
+    function fallbackCopy(text, done) {
+      const ta = document.createElement("textarea");
+      ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.focus(); ta.select();
+      try { document.execCommand("copy"); } catch (_e) { /* ignore */ }
+      document.body.removeChild(ta);
+      if (done) done();
+    }
+
+    function openNudgeTray() {
+      $("nudgeTray").hidden = false;
+      $("nudgeBackdrop").hidden = false;
+      requestAnimationFrame(() => $("nudgeTray").classList.add("open"));
+      $("nudgeBell").setAttribute("aria-expanded", "true");
+    }
+
+    function closeNudgeTray() {
+      const tray = $("nudgeTray");
+      tray.classList.remove("open");
+      $("nudgeBackdrop").hidden = true;
+      $("nudgeBell").setAttribute("aria-expanded", "false");
+      setTimeout(() => { if (!tray.classList.contains("open")) tray.hidden = true; }, 220);
+    }
+
+    function toggleNudgeTray() {
+      if ($("nudgeTray").classList.contains("open")) closeNudgeTray();
+      else openNudgeTray();
     }
 
     function blockerLine(course) {
@@ -1820,6 +2577,14 @@
         uv.className = "badge unverified";
         uv.textContent = s.unverified;
         code.appendChild(uv);
+      }
+      const uscore = state.unlockScores[course.code] || 0;
+      if (uscore > 0 && course.state !== "completed") {
+        const gb = document.createElement("span");
+        gb.className = "badge gateway";
+        gb.innerHTML = icon("flame") + "<span>" + s.unlocksBadge(uscore) + "</span>";
+        gb.title = s.unlocksBadge(uscore);
+        code.appendChild(gb);
       }
       const cr = document.createElement("span");
       cr.className = "cell-cr";
@@ -2484,13 +3249,22 @@
       state.completed = new Set(demo.completed.map(normalizeCode));
       state.completedCredits = (typeof demo.completed_credits === "number")
         ? demo.completed_credits : null;
+      resetWhatif();
       renderTrackToggle(); refreshPlan();
+    }
+
+    function resetWhatif() {
+      state.whatifCap = 15;
+      state.whatifDefer.clear();
+      const out = $("whatifResult");
+      if (out) out.hidden = true;
     }
 
     function clearCompleted() {
       state.completed.clear();
       state.completedCredits = null;
       parsedReview = null; $("review").hidden = true;
+      resetWhatif();
       refreshPlan();
     }
 
@@ -2499,7 +3273,16 @@
       $("langEn").addEventListener("click", () => { state.lang = "en"; applyLang(); });
       $("langAr").addEventListener("click", () => { state.lang = "ar"; applyLang(); });
       $("tabPlan").addEventListener("click", () => { state.view = "plan"; applyView(); });
+      $("tabRoadmap").addEventListener("click", () => { state.view = "roadmap"; applyView(); });
       $("tabAdvisor").addEventListener("click", () => { state.view = "advisor"; applyView(); });
+      $("nudgeBell").addEventListener("click", toggleNudgeTray);
+      $("nudgeClose").addEventListener("click", closeNudgeTray);
+      $("nudgeBackdrop").addEventListener("click", closeNudgeTray);
+      $("capRange").addEventListener("input", (e) => {
+        state.whatifCap = parseInt(e.target.value, 10) || 15;
+        $("capOut").textContent = String(state.whatifCap);
+        runWhatif();
+      });
       $("courseSearch").addEventListener("input", (e) => renderSearchResults(e.target.value));
       $("courseSearch").addEventListener("keydown", onSearchKeydown);
       $("courseSearch").addEventListener("blur", () => setTimeout(hideSearchResults, 120));
