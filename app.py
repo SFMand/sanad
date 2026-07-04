@@ -532,12 +532,23 @@ def build_roadmap(completed, credits, track,
         scores = build_unlock_scores(completed_set, track)
         rem_set = set(rem)
         gap_codes = _gap_option_codes(completed_set, track)
+        needed = rem_set | gap_codes            # only what's still required to graduate
+
+        # How many credits each still-open elective group still needs — capped
+        # per-term too, so a term doesn't schedule every remaining option in a
+        # group (e.g. all 9 one-credit options) once a couple of credits close it.
+        group_left = {g["group"]: g["remaining_credits"] for g in gaps}
+        group_of = defaultdict(list)
+        for g in DB["elective_groups"][track]:
+            if g["name_en"] in group_left:
+                for o in g["options"]:
+                    group_of[o].append(g["name_en"])
 
         def rank_key(c):
-            tier = 0 if c in rem_set else (1 if c in gap_codes else 2)
+            tier = 0 if c in rem_set else 1     # gap_codes (elective options)
             return (tier, -scores.get(c, 0), -COURSES[c]["credits"], COURSES[c]["code"])
 
-        ranked = sorted(elig, key=rank_key)
+        ranked = sorted((c for c in elig if c in needed), key=rank_key)
         if terms == [] and defer_set:                 # defer applies to term 1 only
             ranked = [c for c in ranked if c not in defer_set]
 
@@ -545,6 +556,9 @@ def build_roadmap(completed, credits, track,
         for c in ranked:
             if c in chosen_set:
                 continue
+            is_elective = c in gap_codes and c not in rem_set
+            if is_elective and all(group_left.get(g, 0) <= 0 for g in group_of.get(c, [])):
+                continue                               # this group's gap is already closed
             bundle = [c] + [co for co in COURSES[c]["requirements"]["coreqs"]
                             if co in COURSES and co not in completed_set and co not in chosen_set]
             bcr = sum(COURSES[x]["credits"] for x in bundle)
@@ -555,6 +569,9 @@ def build_roadmap(completed, credits, track,
                     chosen.append(x)
                     chosen_set.add(x)
             term_credits += bcr
+            if is_elective:
+                for g in group_of.get(c, []):
+                    group_left[g] = group_left.get(g, 0) - COURSES[c]["credits"]
 
         if not chosen:
             if kind == "summer":
