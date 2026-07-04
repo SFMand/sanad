@@ -2712,6 +2712,7 @@
       students: {},         // id -> student
       completed: new Set(),
       completedCredits: null,   // authoritative total (transcript); null => sum catalog
+      inProgress: [],       // currently-registered courses (grade pending, from transcript)
       totalRequired: 128,
       plan: null,           // latest /plan response (engine-computed grid state)
       eligibleCodes: [],    // codes eligible now (engine truth) — drives rec cards
@@ -2970,7 +2971,10 @@
       const has = state.completed.has(code);
       const next = (want === undefined) ? !has : want;
       if (next === has) return;
-      if (next) { state.completed.add(code); adjustCredits(code, true); }
+      if (next) {
+        state.completed.add(code); adjustCredits(code, true);
+        state.inProgress = state.inProgress.filter((c) => c !== code);
+      }
       else { state.completed.delete(code); adjustCredits(code, false); }
       renderProgress();   // instant credit feedback; grid recolors when /plan returns
       refreshPlan();
@@ -3197,6 +3201,7 @@
         const pl = data.plan.payload || {};
         // Restore the working record + simulator knobs from the saved inputs.
         state.completed = new Set((pl.completed || []).map(normalizeCode));
+        state.inProgress = (pl.in_progress || []).map(normalizeCode);
         state.completedCredits = (pl.completed_credits === undefined ? null : pl.completed_credits);
         if (pl.track && state.degreePlans[pl.track]) state.track = pl.track;
         state.whatifCap = pl.max_credits_per_term || 15;
@@ -3996,6 +4001,11 @@
       // The transcript's earned-credit total is authoritative (older transcripts
       // include prep courses absent from this catalog). Subtract any unticked rows.
       state.completedCredits = Math.max(0, parsedReview.completed_credits - droppedCredits);
+      // Courses currently registered (grade pending): the advisor must know about
+      // them so it never recommends this term's schedule back to the student.
+      state.inProgress = Array.from(new Set(
+        (parsedReview.in_progress || []).map(normalizeCode)
+      )).filter((c) => !state.completed.has(c));
       parsedReview = null;
       $("review").hidden = true;
       refreshPlan();
@@ -4029,6 +4039,7 @@
           body: JSON.stringify({
             messages: state.messages,
             completed: Array.from(state.completed),
+            in_progress: state.inProgress,
             completed_credits: state.completedCredits,
             track: state.track,
             lang: state.lang
@@ -4259,6 +4270,7 @@
       if (!demo) return;
       if (demo.track && state.tracks.includes(demo.track)) state.track = demo.track;
       state.completed = new Set(demo.completed.map(normalizeCode));
+      state.inProgress = [];
       state.completedCredits = (typeof demo.completed_credits === "number")
         ? demo.completed_credits : null;
       state.studentInfo = studentIdentity(chosenId, demo);
@@ -4276,6 +4288,7 @@
 
     function clearCompleted() {
       state.completed.clear();
+      state.inProgress = [];
       state.completedCredits = null;
       state.studentInfo = null;
       parsedReview = null; $("review").hidden = true;

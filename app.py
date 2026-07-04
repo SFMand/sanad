@@ -91,7 +91,9 @@ def call_llm(system_prompt, messages):
             temperature=0.2,
         ),
     )
-    return resp.text
+    # resp.text is None when the response is empty/blocked — normalize so the
+    # endpoint can detect it instead of returning `reply: null` to the UI.
+    return resp.text or ""
 
 
 # ---------------------------------------------------------------------------
@@ -255,13 +257,13 @@ def missing_for(code, completed, credits, track):
 # Per-track "remaining" (required courses + elective-group gaps)
 # ---------------------------------------------------------------------------
 def remaining_required(completed, track):
-    plan = DB["degree_plans"][track]
+    plan = DB["degree_plans"].get(track, {})
     return [c for lvl in plan.values() for c in lvl if c not in completed]
 
 
 def elective_gaps(completed, track):
     gaps = []
-    for g in DB["elective_groups"][track]:
+    for g in DB["elective_groups"].get(track, []):
         done = sum(COURSES[c]["credits"] for c in g["options"] if c in completed)
         if done < g["choose_credits"]:
             gaps.append({
@@ -272,6 +274,37 @@ def elective_gaps(completed, track):
                 "remaining_credits": g["choose_credits"] - done,
             })
     return gaps
+
+
+# ---------------------------------------------------------------------------
+# Track scope: which catalog courses actually belong to a track's program.
+# The catalog is SHARED across majors (CS tracks, CE, SWE, IS…), so raw
+# eligible_now() spans all of them — anything handed to the model must first
+# be intersected with the student's own plan + elective options.
+# ---------------------------------------------------------------------------
+def plan_level_map(track):
+    """code -> plan level number (1-based) in this track's degree plan."""
+    levels = {}
+    for key, codes in DB["degree_plans"].get(track, {}).items():
+        m = re.search(r"\d+", str(key))
+        n = int(m.group()) if m else 0
+        for c in codes:
+            levels[c] = n
+    return levels
+
+
+def elective_groups_of(track):
+    """code -> [elective group name_en, ...] for this track."""
+    groups = defaultdict(list)
+    for g in DB["elective_groups"].get(track, []):
+        for o in g["options"]:
+            groups[o].append(g["name_en"])
+    return dict(groups)
+
+
+def track_scope(track):
+    """Every course that counts toward THIS track: plan entries + elective options."""
+    return set(plan_level_map(track)) | set(elective_groups_of(track))
 
 
 # ---------------------------------------------------------------------------
@@ -291,12 +324,37 @@ def _view(code):
     }
 
 
-def build_advising_record(completed, credits, track):
-    """Structured, deterministic record the model must treat as ground truth."""
+def build_advising_record(completed, credits, track, in_progress=None):
+    """Structured, deterministic record the model must treat as ground truth.
+
+    Everything is scoped to the student's TRACK: the shared catalog spans several
+    majors, so eligible_now() is intersected with the track's plan + elective
+    options before it reaches the model. `in_progress` (currently-registered,
+    grade pending) courses are excluded from ELIGIBLE NOW and listed separately.
+    """
     completed = normalize_completed(completed)
     completed_set = set(completed)
     track = valid_track(track)
-    elig = eligible_now(completed_set, credits, track)
+    in_prog = [c for c in normalize_completed(in_progress or [])
+               if c not in completed_set]
+    in_prog_set = set(in_prog)
+
+    levels = plan_level_map(track)
+    groups = elective_groups_of(track)
+    scope = set(levels) | set(groups)
+
+    def tagged_view(code):
+        """_view + a role tag the model can prioritize by."""
+        v = _view(code)
+        if code in levels:
+            v["tag"] = f"level {levels[code]} — required for this track"
+        elif code in groups:
+            v["tag"] = "elective option: " + ", ".join(groups[code])
+        return v
+
+    elig = [c for c in eligible_now(completed_set, credits, track)
+            if c in scope and c not in in_prog_set]
+    elig.sort(key=lambda c: (levels.get(c, 99), c))
     elig_set = set(elig)
 
     req_remaining = [c for c in remaining_required(completed_set, track)
@@ -304,7 +362,7 @@ def build_advising_record(completed, credits, track):
 
     blocked = []
     for code in req_remaining:
-        if code in elig_set:
+        if code in elig_set or code in in_prog_set:
             continue
         mr = missing_for(code, completed_set, credits, track)
         v = _view(code)
@@ -312,14 +370,19 @@ def build_advising_record(completed, credits, track):
         blocked.append(v)
 
     tot = total_for(track)
+    catalog_credits = sum(COURSES[c]["credits"] for c in completed)
     return {
         "track": track,
         "track_name_ar": TRACK_NAMES_AR.get(track, track),
         "completed_credits": credits,
         "total_required": tot,
         "credits_remaining": max(0, tot - credits),
+        # Credits on the transcript that come from courses OUTSIDE this catalog
+        # (e.g. prep-year); explains completed_credits > sum of listed courses.
+        "non_catalog_credits": max(0, credits - catalog_credits),
         "completed": [_view(c) for c in completed],
-        "eligible_now": [_view(c) for c in elig],
+        "in_progress": [_view(c) for c in in_prog],
+        "eligible_now": [tagged_view(c) for c in elig],
         "remaining_required": [_view(c) for c in req_remaining],
         "remaining_required_blocked": blocked,
         "elective_gaps": elective_gaps(completed_set, track),
@@ -337,7 +400,7 @@ def build_plan_view(completed, credits, track):
     track = valid_track(track)
     elig_set = set(eligible_now(completed_set, credits, track))
 
-    plan = DB["degree_plans"][track]
+    plan = DB["degree_plans"].get(track, {})
     plan_codes = set()
 
     # level key -> level number, sorted ascending.
@@ -383,7 +446,7 @@ def build_plan_view(completed, credits, track):
         "years": [
             {"year": y, "semesters": years[y]} for y in sorted(years)
         ],
-        "eligible_codes": sorted(elig_set),
+        "eligible_codes": sorted(elig_set & track_scope(track)),
         "other_completed": [_view(c) for c in other_completed],
         "elective_gaps": elective_gaps(completed_set, track),
     }
@@ -511,7 +574,7 @@ def build_bottlenecks(completed, credits, track, top=6):
 def _gap_option_codes(completed_set, track):
     """Elective-option courses that still count toward an unmet elective group."""
     codes = set()
-    for g in DB["elective_groups"][track]:
+    for g in DB["elective_groups"].get(track, []):
         done = sum(COURSES[c]["credits"] for c in g["options"] if c in completed_set)
         if done < g["choose_credits"]:
             codes.update(o for o in g["options"] if o in COURSES and o not in completed_set)
@@ -562,7 +625,7 @@ def build_roadmap(completed, credits, track,
         # group (e.g. all 9 one-credit options) once a couple of credits close it.
         group_left = {g["group"]: g["remaining_credits"] for g in gaps}
         group_of = defaultdict(list)
-        for g in DB["elective_groups"][track]:
+        for g in DB["elective_groups"].get(track, []):
             if g["name_en"] in group_left:
                 for o in g["options"]:
                     group_of[o].append(g["name_en"])
@@ -786,18 +849,20 @@ HOW YOU MUST WORK (non-negotiable):
 
 def _fmt_course(c):
     label = f'{c["code"]} — {c["title_ar"]} ({c["title_en"]}, {c["code_en"]}) [{c["credits"]} cr]'
+    if c.get("tag"):
+        label += f' [{c["tag"]}]'
     if not c.get("verified", True):
         label += " (not yet verified)"
     return label
 
 
-def build_system_prompt(completed, credits, track, lang="en"):
+def build_system_prompt(completed, credits, track, lang="en", in_progress=None):
     """Base instructions + the serialized authoritative record (per track).
 
     Thin wrapper kept for selftest/back-compat; `/chat` builds the record once and
     calls `format_system_prompt` directly so it can also return eligible_codes.
     """
-    rec = build_advising_record(completed, credits, track)
+    rec = build_advising_record(completed, credits, track, in_progress)
     return format_system_prompt(rec, lang)
 
 
@@ -819,10 +884,26 @@ def format_system_prompt(rec, lang="en"):
 
     lines.append(f'COMPLETED COURSES ({len(rec["completed"])}):')
     lines += [f"  - {_fmt_course(c)}" for c in rec["completed"]] or ["  (none yet)"]
+    if rec.get("non_catalog_credits"):
+        lines.append(f'  NOTE: the credit total above includes {rec["non_catalog_credits"]} '
+                     'credit(s) from courses outside this catalog (e.g. preparatory-year '
+                     'courses), so it is intentionally higher than the sum of the courses '
+                     'listed here. Do not "correct" it.')
     lines.append("")
 
-    lines.append(f'ELIGIBLE NOW — recommend ONLY from this list ({len(rec["eligible_now"])}):')
+    if rec.get("in_progress"):
+        lines.append(f'CURRENTLY REGISTERED THIS TERM — grade pending ({len(rec["in_progress"])}). '
+                     'The student is ALREADY taking these; never recommend them, and do not '
+                     'count them as completed:')
+        lines += [f"  - {_fmt_course(c)}" for c in rec["in_progress"]]
+        lines.append("")
+
+    lines.append(f'ELIGIBLE NOW — recommend ONLY from this list; it contains only courses in '
+                 f'THIS student\'s program, sorted by plan level ({len(rec["eligible_now"])}):')
     lines += [f"  - {_fmt_course(c)}" for c in rec["eligible_now"]] or ["  (none)"]
+    lines.append("  Courses from other CCIS majors/tracks are deliberately NOT listed. If the "
+                 "student asks about a course that appears nowhere in this record, say it is "
+                 "not part of their track's plan data and refer them to their academic advisor.")
     lines.append("")
 
     lines.append('NOT YET ELIGIBLE (required for this track) — do NOT recommend; if asked, '
@@ -868,8 +949,12 @@ def format_system_prompt(rec, lang="en"):
 
 def resolve_credits(completed, completed_credits):
     """Completed-credit total to feed the engine: prefer the explicit value from
-    the transcript parser; fall back to summing catalog-matched course credits."""
-    if isinstance(completed_credits, (int, float)) and completed_credits >= 0:
+    the transcript parser; fall back to summing catalog-matched course credits.
+    Booleans (JSON true/false) and out-of-range values are rejected — a stray
+    `true` would otherwise become a 1-credit student and poison the record."""
+    if (isinstance(completed_credits, (int, float))
+            and not isinstance(completed_credits, bool)
+            and 0 <= completed_credits <= 400):
         return int(completed_credits)
     return sum(COURSES[c]["credits"] for c in normalize_completed(completed))
 
@@ -1135,23 +1220,37 @@ def chat():
     data = request.get_json(force=True, silent=True) or {}
     messages = data.get("messages", [])
     completed = data.get("completed", [])
+    in_progress = data.get("in_progress") or []
     completed_credits = data.get("completed_credits")
-    track = valid_track(data.get("track", DEFAULT_TRACK))
     lang = data.get("lang", "en")
 
     if not isinstance(messages, list) or not messages:
         return jsonify({"error": "messages must be a non-empty list"}), 400
+    for m in messages:
+        if (not isinstance(m, dict) or m.get("role") not in ("user", "assistant")
+                or not isinstance(m.get("content"), str) or not m["content"].strip()):
+            return jsonify({"error": "each message needs role 'user'|'assistant' "
+                                     "and non-empty string content"}), 400
+    # An unknown track must NOT silently become the default track — the record
+    # would then present the wrong track's plan as ground truth.
+    track = data.get("track") or DEFAULT_TRACK
+    if track not in TRACKS:
+        return jsonify({"error": f"unknown track '{track}'"}), 400
+    if not isinstance(in_progress, list):
+        in_progress = []
 
     credits = resolve_credits(completed, completed_credits)
     # Build the authoritative record ONCE; the prompt and the eligible-code list
     # the UI uses for recommendation cards come from the same VERIFIED record.
-    rec = build_advising_record(completed, credits, track)
+    rec = build_advising_record(completed, credits, track, in_progress)
     system_prompt = format_system_prompt(rec, lang)
 
     try:
         reply = call_llm(system_prompt, messages)
     except Exception as e:  # surface a clean message to the UI (e.g. missing key)
         return jsonify({"error": f"LLM call failed: {e}"}), 500
+    if not reply.strip():
+        return jsonify({"error": "the model returned an empty reply — please try again"}), 502
 
     return jsonify({
         "reply": reply,
