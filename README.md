@@ -115,7 +115,8 @@ The checks: (1) `demo_real` (general, 98 cr) — non-empty eligible list, ~10 re
 
 ## What to demo
 
-The UI has two tabbed, full-width views: **📅 Plan** and **💬 Advisor**.
+The UI has three tabbed, full-width views — **📅 Plan**, **🎓 Roadmap**, and **💬 Advisor** —
+plus a **🔔 notifications** tray in the header.
 
 1. In **Plan**, pick a **track** (General / AI / Cyber). Click **"Upload transcript (PDF)"** and
    choose an EduGate academic-record PDF → the parsed courses appear for review; confirm/edit and
@@ -135,6 +136,29 @@ The UI has two tabbed, full-width views: **📅 Plan** and **💬 Advisor**.
 5. Toggle **ع** (top-right): views, the grid (RTL year/semester flow), and the cards flip to
    **RTL** and Arabic. (The assistant mirrors whichever language you type in.)
 
+### 🎓 Roadmap, 🔔 nudges, and the what-if simulator (forward-looking features)
+
+Inspired by Georgia State's **Pounce** advising bot — which cut summer melt ~22% by turning each
+student's own progress data into proactive, personalized guidance — these three features project
+sanad's verified record *forward*. All are **deterministic** (pure engine, no API key), so they
+work offline and are safe to demo live.
+
+6. Open **🎓 Roadmap** → a greedy term-by-term schedule to graduation with a **projected graduation
+   date**. Terms follow the **KSU CCIS calendar** — **First Semester / Second Semester** (الفصل
+   الأول/الثاني) named by academic year, e.g. *"First Semester 2026/27"*. Every course is drawn from
+   `eligible_now` for that simulated term, so the plan can never place a course before its
+   prerequisites. Gateway courses carry a **"unlocks N"** badge (how many later required courses
+   depend on them).
+7. In the **what-if simulator** (under the roadmap), drag **credits per term** (bounded to KSU's
+   **12–21** load limits, with a note that 19–21 needs excellent standing + advisor approval), tick
+   **"include summer terms"** (the short KSU summer term, capped lower), or tap a course under
+   **"delay a course"** → the **graduation date shifts live** and is compared *chronologically*
+   (green = graduate earlier, red = later). Overloading or using summers can pull graduation in.
+8. Click the header **🔔 bell** → a **"For you"** tray of ranked, personalized nudge cards built
+   from the record: registration countdown, "prioritize this gateway", credits-to-graduation,
+   elective gaps, a blocked-course unlock path, and a **"Talk to a human advisor"** hand-off with a
+   copy-ready summary. Each card deep-links into the relevant view. All text is bilingual.
+
 ## Endpoints
 
 | Method & path | Purpose |
@@ -144,6 +168,9 @@ The UI has two tabbed, full-width views: **📅 Plan** and **💬 Advisor**.
 | `POST /upload_transcript` | Multipart `file` (PDF) → `{ completed, completed_credits, in_progress, details }` (parsed via `transcript_parser`, each detail annotated with catalog status) |
 | `POST /plan` | Body `{ completed, completed_credits, track }` → engine-computed grid state: `{ years:[{year,semesters:[{level,level_num,courses:[{…,state,missing_courses,missing_coreqs,credit_gap}]}]}], eligible_codes, other_completed, elective_gaps, … }`. **Pure engine — no API key**, so the Plan grid works offline. |
 | `POST /chat` | Body `{ messages, completed:["عال 212", …], completed_credits, track, lang:"ar"\|"en" }` → builds the system prompt from the same VERIFIED record and returns `{ reply, eligible_codes }` (the `eligible_codes` drive the recommendation cards). |
+| `POST /roadmap` | Body `{ completed, completed_credits, track }` → `{ roadmap:{ terms:[{term_label,term_credits,courses[]}], projected_terms, projected_grad, complete, … }, bottlenecks:[{code,unlock_score,eligible_now}], unlock_scores:{code:N} }`. **Pure engine — no API key.** |
+| `POST /nudges` | Body `{ completed, completed_credits, track, lang }` → `{ nudges:[{type,icon,priority,title,body,action}] }`, ranked, bilingual. **Pure engine.** |
+| `POST /whatif` | Body `{ completed, completed_credits, track, defer:[codes], max_credits_per_term (12–21), include_summer }` → re-simulates the roadmap and returns `{ base, new, direction:"earlier"\|"later"\|"same", base_grad, new_grad }` (`direction` compares graduations chronologically, so a summer term that moves the date earlier is detected even when the term count is unchanged). **Pure engine.** |
 
 ## Adding courses, tracks, and plan entries
 
