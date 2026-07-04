@@ -2462,6 +2462,8 @@
         });
         const data = await res.json();
         if (!res.ok || data.error) { out.hidden = true; return; }
+        state.roadmap = data.new;   // reflect the simulated cap/summer/defer in the timeline
+        renderRoadmap();
         const baseGrad = state.lang === "ar" ? data.base_grad_ar : data.base_grad;
         const newGrad = state.lang === "ar" ? data.new_grad_ar : data.new_grad;
         out.hidden = false;
