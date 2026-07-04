@@ -197,10 +197,12 @@ run **without an API key**.
 
 `courses.json` is **frozen historical seed data** — migrated once into `course_planner.db` via
 `migrate_to_sqlite.py` and no longer read at runtime. Going forward, use **`db_admin.py`** (CLI)
-or **`admin_app.py`** (web UI) to add new majors/tracks/courses. Both are *additive only* — they
-don't edit or delete existing rows — and both run every mutation through a connection with
-`PRAGMA foreign_keys = ON`, so a typo'd course code in a prereq/coreq/course-code argument fails
-loudly with an `IntegrityError` (and rolls back) instead of silently producing a broken row.
+or **`admin_app.py`** (web UI) to add new majors/tracks/courses, and to edit existing course rows
+(all fields except the code and prerequisites/co-requisites). Track/plan-entry/elective-group
+additions remain *additive only* — they don't edit or delete existing rows — and every mutation
+runs through a connection with `PRAGMA foreign_keys = ON`, so a typo'd course code in a
+prereq/coreq/course-code argument fails loudly with an `IntegrityError` (and rolls back) instead
+of silently producing a broken row.
 
 **CLI** (see `python db_admin.py --help` for every subcommand):
 
@@ -236,9 +238,10 @@ mutation regardless of which UI you use.
   courses.json-shaped in-memory dict that `app.py`'s engine operates on), plus the saved-plan
   CRUD (`ensure_plans_table` / `save_plan` / `list_plans` / `get_plan` / `rename_plan` /
   `delete_plan`) — the only write path through the data layer.
-- [`db_admin.py`](db_admin.py) — additive authoring functions (add-course/track/plan-entry/
-  elective-group/elective-option, list-courses, check) usable both as a CLI and as a library;
-  `admin_app.py` calls the same functions.
+- [`db_admin.py`](db_admin.py) — mostly-additive authoring functions (add-course/track/plan-entry/
+  elective-group/elective-option, list-courses, check), plus `update-course` for editing an
+  existing course's fields; usable both as a CLI and as a library. `admin_app.py` calls the same
+  functions.
 - [`admin_app.py`](admin_app.py) / [`admin.html`](admin.html) — small Flask web UI over
   `db_admin.py`'s functions (see above).
 - [`transcript_parser.py`](transcript_parser.py) — parses passed courses + earned credits from

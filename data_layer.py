@@ -56,7 +56,8 @@ def load_data_from_db(conn=None):
         }
 
         course_rows = conn.execute(
-            "SELECT code, code_en, title_ar, title_en, credits, category, min_credits, verified FROM courses"
+            "SELECT code, code_en, title_ar, title_en, credits, category, min_credits, verified, "
+            "description_en, description_ar FROM courses"
         ).fetchall()
         # Global (track-agnostic) prereqs, plus per-track overrides from
         # course_track_prereqs. A track's scoped set fully replaces the global
@@ -85,6 +86,8 @@ def load_data_from_db(conn=None):
                 "title_en": r["title_en"],
                 "credits": r["credits"],
                 "category": r["category"],
+                "description_en": r["description_en"],
+                "description_ar": r["description_ar"],
                 "requirements": {
                     "courses": global_prereqs.get(r["code"], []),
                     "prereqs_by_track": dict(track_prereqs.get(r["code"], {})),

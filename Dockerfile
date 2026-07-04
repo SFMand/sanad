@@ -11,7 +11,9 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app.py admin_app.py db_admin.py transcript_parser.py data_layer.py \
-     courses.json course_planner.db index.html admin.html entrypoint.sh ./
+     migrate_to_sqlite.py courses.json course_planner.db index.html admin.html \
+     entrypoint.sh ./
+COPY migration/ ./migration/
 RUN chmod +x entrypoint.sh
 
 # 5000 = app.py (student-facing), 5050 = admin_app.py (catalog authoring).
