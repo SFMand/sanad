@@ -100,9 +100,20 @@ def call_llm(system_prompt, messages):
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-from data_layer import load_data_from_db
+from data_layer import (
+    load_data_from_db,
+    ensure_plans_table,
+    save_plan,
+    list_plans,
+    get_plan,
+    rename_plan,
+    delete_plan,
+)
 
 DB = load_data_from_db()
+# The committed course_planner.db predates the saved-plans feature; make sure the
+# plans table exists before any /plans/* request touches it.
+ensure_plans_table()
 PROGRAM = DB["program"]
 COURSES = {c["code"]: c for c in DB["courses"]}      # Arabic code -> course
 STUDENTS = DB.get("students", {})                    # id -> student
@@ -994,6 +1005,118 @@ def whatif():
     })
 
 
+# ---------------------------------------------------------------------------
+# Saved plan versions (server-side, handle-scoped). "Auto-plan to graduation"
+# is already the /roadmap engine; these endpoints let a student SAVE named
+# versions of that plan and reload/rename/delete them. The roadmap snapshot is
+# recomputed here from the inputs (authoritative) — the client never supplies
+# the schedule. Pure engine — no API key. See data_layer for the CRUD.
+# ---------------------------------------------------------------------------
+
+def _plan_knobs(data):
+    """Read + clamp the roadmap knobs shared by /whatif and /plans/save."""
+    include_summer = bool(data.get("include_summer", False))
+    defer = data.get("defer", []) or []
+    if not isinstance(defer, list):
+        defer = []
+    cap = data.get("max_credits_per_term", DEFAULT_TERM_CREDITS)
+    try:
+        cap = max(MIN_TERM_CREDITS, min(MAX_TERM_CREDITS, int(cap)))
+    except (TypeError, ValueError):
+        cap = DEFAULT_TERM_CREDITS
+    return cap, defer, include_summer
+
+
+@app.post("/plans/save")
+def plans_save():
+    """Save (or update, when `plan_id` is given) a named plan version for a
+    handle. The roadmap snapshot is (re)computed here from the inputs, so a
+    stored plan is authoritative and reproducible."""
+    data = request.get_json(force=True, silent=True) or {}
+    handle = (data.get("handle") or "").strip()
+    name = (data.get("name") or "").strip()
+    if not handle:
+        return jsonify({"error": "handle is required"}), 400
+    if not name:
+        return jsonify({"error": "name is required"}), 400
+
+    completed = data.get("completed", [])
+    track = valid_track(data.get("track", DEFAULT_TRACK))
+    credits = resolve_credits(completed, data.get("completed_credits"))
+    cap, defer, include_summer = _plan_knobs(data)
+
+    roadmap = build_roadmap(completed, credits, track,
+                            max_credits_per_term=cap, defer=defer,
+                            include_summer=include_summer)
+    payload = {
+        # Inputs — restore the exact working record when reopened. Keep the raw
+        # completed_credits (may be null => "sum the catalog") for faithful reload.
+        "completed": list(completed),
+        "completed_credits": data.get("completed_credits"),
+        "resolved_credits": credits,
+        "track": track,
+        "max_credits_per_term": cap,
+        "include_summer": include_summer,
+        "defer": list(defer),
+        # Schedule snapshot — what was on screen when saved.
+        "roadmap": roadmap,
+    }
+    saved = save_plan(handle, name, track, credits, payload,
+                      plan_id=data.get("plan_id"))
+    if saved is None:
+        return jsonify({"error": "plan not found for this handle"}), 404
+    return jsonify({"plan": saved})
+
+
+@app.post("/plans/list")
+def plans_list():
+    """All saved plans for a handle (summaries: name, track, projected grad)."""
+    data = request.get_json(force=True, silent=True) or {}
+    handle = (data.get("handle") or "").strip()
+    if not handle:
+        return jsonify({"plans": []})
+    return jsonify({"plans": list_plans(handle)})
+
+
+@app.post("/plans/load")
+def plans_load():
+    """One saved plan's full payload (inputs + roadmap snapshot), for reopening."""
+    data = request.get_json(force=True, silent=True) or {}
+    plan_id = (data.get("plan_id") or "").strip()
+    handle = (data.get("handle") or "").strip()
+    if not plan_id or not handle:
+        return jsonify({"error": "plan_id and handle are required"}), 400
+    plan = get_plan(plan_id, handle)
+    if plan is None:
+        return jsonify({"error": "plan not found"}), 404
+    return jsonify({"plan": plan})
+
+
+@app.post("/plans/rename")
+def plans_rename():
+    data = request.get_json(force=True, silent=True) or {}
+    plan_id = (data.get("plan_id") or "").strip()
+    handle = (data.get("handle") or "").strip()
+    name = (data.get("name") or "").strip()
+    if not plan_id or not handle or not name:
+        return jsonify({"error": "plan_id, handle and name are required"}), 400
+    if not rename_plan(plan_id, handle, name):
+        return jsonify({"error": "plan not found"}), 404
+    return jsonify({"plan": get_plan(plan_id, handle)})
+
+
+@app.post("/plans/delete")
+def plans_delete():
+    data = request.get_json(force=True, silent=True) or {}
+    plan_id = (data.get("plan_id") or "").strip()
+    handle = (data.get("handle") or "").strip()
+    if not plan_id or not handle:
+        return jsonify({"error": "plan_id and handle are required"}), 400
+    if not delete_plan(plan_id, handle):
+        return jsonify({"error": "plan not found"}), 404
+    return jsonify({"ok": True})
+
+
 @app.post("/chat")
 def chat():
     data = request.get_json(force=True, silent=True) or {}
@@ -1167,6 +1290,56 @@ def run_selftest():
           len(nd) >= 3 and all(nd[i]["priority"] >= nd[i + 1]["priority"]
                                for i in range(len(nd) - 1)),
           f"{len(nd)} nudges: {', '.join(n['type'] for n in nd)}")
+    print()
+
+    # ---- Test 6: saved-plan versions (save / list / load / rename / delete) ----
+    print("Test 6 — saved plan versions (round-trip under a temp handle):")
+    ensure_plans_table()
+    test_handle = "__selftest__"
+    # Clean any leftovers from a previous aborted run, then work self-contained.
+    for p in list_plans(test_handle):
+        delete_plan(p["plan_id"], test_handle)
+    try:
+        snapshot = build_roadmap(comp, cr, "ai")
+        payload = {"completed": comp, "completed_credits": cr, "track": "ai",
+                   "roadmap": snapshot}
+        a = save_plan(test_handle, "Plan A", "ai", cr, payload)
+        b = save_plan(test_handle, "Plan B", "ai", cr, payload)
+        check("two saves produce two distinct plan ids",
+              a and b and a["plan_id"] != b["plan_id"],
+              f"a={a and a['plan_id']}, b={b and b['plan_id']}")
+
+        listed = list_plans(test_handle)
+        check("list returns both plans for the handle, with the grad snapshot",
+              len(listed) == 2 and all(p["projected_grad"] == snapshot["projected_grad"]
+                                       for p in listed),
+              f"listed {len(listed)}: {[p['name'] for p in listed]}")
+
+        loaded = get_plan(a["plan_id"], test_handle)
+        check("load returns the full payload (inputs + roadmap snapshot)",
+              loaded and loaded["payload"]["track"] == "ai"
+              and loaded["payload"]["roadmap"]["projected_grad"] == snapshot["projected_grad"],
+              f"payload keys: {sorted(loaded['payload'].keys()) if loaded else None}")
+
+        check("a plan_id is scoped to its handle (wrong handle => not found)",
+              get_plan(a["plan_id"], "someone_else") is None)
+
+        renamed = rename_plan(a["plan_id"], test_handle, "Plan A2")
+        check("rename updates the label",
+              renamed and get_plan(a["plan_id"], test_handle)["name"] == "Plan A2")
+
+        upd = save_plan(test_handle, "Plan A3", "ai", cr, payload, plan_id=a["plan_id"])
+        check("save with an existing plan_id updates in place (no new row)",
+              upd and upd["plan_id"] == a["plan_id"] and len(list_plans(test_handle)) == 2,
+              f"count after update: {len(list_plans(test_handle))}")
+
+        check("delete removes exactly one plan",
+              delete_plan(a["plan_id"], test_handle) and len(list_plans(test_handle)) == 1)
+    finally:
+        for p in list_plans(test_handle):
+            delete_plan(p["plan_id"], test_handle)
+    check("temp handle is clean after the round-trip",
+          len(list_plans(test_handle)) == 0)
     print()
 
     passed = sum(1 for r in results if r)

@@ -2,8 +2,11 @@
 foreign-key pragma, and how to reconstruct the courses.json-shaped dict
 that app.py, migrate_to_sqlite.py, and db_admin.py all rely on."""
 
+import datetime
+import json
 import os
 import sqlite3
+import uuid
 from collections import defaultdict
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -145,3 +148,178 @@ def load_data_from_db(conn=None):
     finally:
         if own_conn:
             conn.close()
+
+
+# ---------------------------------------------------------------------------
+# Saved plan versions (see migration/014_plans.sql).
+#
+# These are the only WRITE path through data_layer. A "plan" is a named,
+# handle-scoped snapshot of a student's forward schedule: the roadmap engine's
+# output plus the inputs that produced it, stored as a JSON `payload`. The
+# app.py endpoints recompute the roadmap server-side before saving, so the
+# stored snapshot is authoritative (code handles truth), never client-supplied.
+# ---------------------------------------------------------------------------
+
+_PLANS_SCHEMA = """
+CREATE TABLE IF NOT EXISTS plans (
+    plan_id           TEXT PRIMARY KEY,
+    handle            TEXT NOT NULL,
+    name              TEXT NOT NULL,
+    track             TEXT NOT NULL,
+    completed_credits INTEGER,
+    payload           TEXT NOT NULL,
+    created_at        TEXT NOT NULL,
+    updated_at        TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_plans_handle ON plans(handle);
+"""
+
+
+def ensure_plans_table(conn=None):
+    """Create the plans table if it's missing. Idempotent, so it's safe to call
+    at startup against the committed course_planner.db (which predates this
+    table) as well as any freshly migrated DB."""
+    own_conn = conn is None
+    if own_conn:
+        conn = connect()
+    try:
+        conn.executescript(_PLANS_SCHEMA)
+        conn.commit()
+    finally:
+        if own_conn:
+            conn.close()
+
+
+def _norm_handle(handle):
+    return (handle or "").strip().lower()
+
+
+def _now_iso():
+    return datetime.datetime.now().isoformat(timespec="seconds")
+
+
+def _plan_summary(row):
+    """Lightweight list-item view: the metadata + the snapshot's projected
+    graduation, without shipping the whole payload."""
+    payload = json.loads(row["payload"])
+    rm = payload.get("roadmap") or {}
+    return {
+        "plan_id": row["plan_id"],
+        "name": row["name"],
+        "track": row["track"],
+        "completed_credits": row["completed_credits"],
+        "projected_grad": rm.get("projected_grad"),
+        "projected_grad_ar": rm.get("projected_grad_ar"),
+        "projected_terms": rm.get("projected_terms"),
+        "complete": rm.get("complete"),
+        "created_at": row["created_at"],
+        "updated_at": row["updated_at"],
+    }
+
+
+def save_plan(handle, name, track, completed_credits, payload_dict, plan_id=None):
+    """Insert a new plan, or update an existing one when `plan_id` is given.
+    Returns the saved plan's summary (with payload), or None if `plan_id` was
+    supplied but no matching plan exists for this handle."""
+    handle = _norm_handle(handle)
+    name = (name or "").strip()
+    payload = json.dumps(payload_dict, ensure_ascii=False)
+    conn = connect()
+    try:
+        ensure_plans_table(conn)
+        now = _now_iso()
+        if plan_id:
+            cur = conn.execute(
+                "UPDATE plans SET name = ?, track = ?, completed_credits = ?, "
+                "payload = ?, updated_at = ? WHERE plan_id = ? AND handle = ?",
+                (name, track, completed_credits, payload, now, plan_id, handle),
+            )
+            if cur.rowcount == 0:
+                return None
+        else:
+            plan_id = uuid.uuid4().hex[:12]
+            conn.execute(
+                "INSERT INTO plans (plan_id, handle, name, track, completed_credits, "
+                "payload, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                (plan_id, handle, name, track, completed_credits, payload, now, now),
+            )
+        conn.commit()
+        return get_plan(plan_id, handle, conn)
+    finally:
+        conn.close()
+
+
+def list_plans(handle, conn=None):
+    """All saved plans for a handle, newest-updated first (summaries only)."""
+    handle = _norm_handle(handle)
+    own_conn = conn is None
+    if own_conn:
+        conn = connect()
+    try:
+        ensure_plans_table(conn)
+        rows = conn.execute(
+            "SELECT plan_id, name, track, completed_credits, payload, created_at, "
+            "updated_at FROM plans WHERE handle = ? ORDER BY updated_at DESC, rowid DESC",
+            (handle,),
+        ).fetchall()
+        return [_plan_summary(r) for r in rows]
+    finally:
+        if own_conn:
+            conn.close()
+
+
+def get_plan(plan_id, handle=None, conn=None):
+    """A single plan's summary plus its full `payload` (inputs + roadmap
+    snapshot). Scoped to `handle` when given. None if not found."""
+    own_conn = conn is None
+    if own_conn:
+        conn = connect()
+    try:
+        ensure_plans_table(conn)
+        if handle is not None:
+            row = conn.execute(
+                "SELECT * FROM plans WHERE plan_id = ? AND handle = ?",
+                (plan_id, _norm_handle(handle)),
+            ).fetchone()
+        else:
+            row = conn.execute(
+                "SELECT * FROM plans WHERE plan_id = ?", (plan_id,)
+            ).fetchone()
+        if row is None:
+            return None
+        summary = _plan_summary(row)
+        summary["payload"] = json.loads(row["payload"])
+        return summary
+    finally:
+        if own_conn:
+            conn.close()
+
+
+def rename_plan(plan_id, handle, name):
+    """Rename a plan. Returns True if a row was updated."""
+    conn = connect()
+    try:
+        ensure_plans_table(conn)
+        cur = conn.execute(
+            "UPDATE plans SET name = ?, updated_at = ? WHERE plan_id = ? AND handle = ?",
+            ((name or "").strip(), _now_iso(), plan_id, _norm_handle(handle)),
+        )
+        conn.commit()
+        return cur.rowcount > 0
+    finally:
+        conn.close()
+
+
+def delete_plan(plan_id, handle):
+    """Delete a plan. Returns True if a row was removed."""
+    conn = connect()
+    try:
+        ensure_plans_table(conn)
+        cur = conn.execute(
+            "DELETE FROM plans WHERE plan_id = ? AND handle = ?",
+            (plan_id, _norm_handle(handle)),
+        )
+        conn.commit()
+        return cur.rowcount > 0
+    finally:
+        conn.close()

@@ -171,6 +171,27 @@ work offline and are safe to demo live.
 | `POST /roadmap` | Body `{ completed, completed_credits, track }` → `{ roadmap:{ terms:[{term_label,term_credits,courses[]}], projected_terms, projected_grad, complete, … }, bottlenecks:[{code,unlock_score,eligible_now}], unlock_scores:{code:N} }`. **Pure engine — no API key.** |
 | `POST /nudges` | Body `{ completed, completed_credits, track, lang }` → `{ nudges:[{type,icon,priority,title,body,action}] }`, ranked, bilingual. **Pure engine.** |
 | `POST /whatif` | Body `{ completed, completed_credits, track, defer:[codes], max_credits_per_term (12–21), include_summer }` → re-simulates the roadmap and returns `{ base, new, direction:"earlier"\|"later"\|"same", base_grad, new_grad }` (`direction` compares graduations chronologically, so a summer term that moves the date earlier is detected even when the term count is unchanged). **Pure engine.** |
+| `POST /plans/save` | Body `{ handle, name, completed, completed_credits, track, max_credits_per_term, include_summer, defer, plan_id? }` → saves (or, with `plan_id`, updates in place) a named plan version. The roadmap snapshot is **recomputed server-side** from the inputs (authoritative — the client never supplies the schedule). Returns `{ plan }`. **Pure engine.** |
+| `POST /plans/list` | Body `{ handle }` → `{ plans:[{plan_id,name,track,completed_credits,projected_grad,projected_terms,complete,updated_at}] }` for that handle, newest-updated first (summaries only). |
+| `POST /plans/load` | Body `{ handle, plan_id }` → `{ plan }` with the full `payload` (saved inputs + roadmap snapshot), for reopening a version exactly as saved. |
+| `POST /plans/rename` | Body `{ handle, plan_id, name }` → `{ plan }`. |
+| `POST /plans/delete` | Body `{ handle, plan_id }` → `{ ok:true }`. |
+
+### 💾 Saved plan versions
+
+The 🎓 Roadmap tab is the auto-generated term-by-term path to graduation (the `/roadmap`
+engine). A **"Saved plans"** panel there lets a student **save named versions** of that plan and
+reload / rename / delete them later. Each version captures the current record (track, completed
+courses, completed-credits) **and** the what-if simulator knobs (credits/term, include-summer,
+deferrals), plus a **snapshot of the generated schedule** — so a saved plan is a stable, reproducible
+artifact (e.g. *"Standard 15/term"* graduating a term later than *"Fast: summers + 18"*).
+
+Plans are stored **server-side** in `course_planner.db` and **scoped to a free-text handle** (a name
+or KSU ID entered in the panel — there is no login). The handle is remembered in the browser's
+`localStorage` only to prefill the field; the plans themselves never live in the browser. Anyone with
+the handle can view its plans, which is acceptable for non-sensitive degree plans and consistent with
+the app's local, no-scraping privacy posture. Like the rest of the engine, all `/plans/*` endpoints
+run **without an API key**.
 
 ## Adding courses, tracks, and plan entries
 
@@ -212,7 +233,9 @@ mutation regardless of which UI you use.
   `/plan` (grid state) and `/upload_transcript`, isolated `call_llm()`, and the `selftest` command.
 - [`data_layer.py`](data_layer.py) — the single place that knows the SQLite path and the
   `PRAGMA foreign_keys = ON` connection; `connect()` and `load_data_from_db()` (reconstructs the
-  courses.json-shaped in-memory dict that `app.py`'s engine operates on).
+  courses.json-shaped in-memory dict that `app.py`'s engine operates on), plus the saved-plan
+  CRUD (`ensure_plans_table` / `save_plan` / `list_plans` / `get_plan` / `rename_plan` /
+  `delete_plan`) — the only write path through the data layer.
 - [`db_admin.py`](db_admin.py) — additive authoring functions (add-course/track/plan-entry/
   elective-group/elective-option, list-courses, check) usable both as a CLI and as a library;
   `admin_app.py` calls the same functions.
@@ -251,6 +274,7 @@ SQLite, schema in `migration/*.sql`. Core tables:
 | `degree_plan_entries` | `(track_code, level_key, position) → course_code` — places a course in a track's plan at a level |
 | `elective_groups` / `elective_group_options` | per-track elective groups (`name_en/ar`, `choose_credits`) and their course options |
 | `students` / `student_completed_courses` | demo students used by the UI's "Load demo student" |
+| `plans` | saved plan versions: `plan_id` (PK), `handle`, `name`, `track`, `completed_credits`, `payload` (JSON: inputs + roadmap snapshot), `created_at`/`updated_at`. Deliberately FK-free so a saved plan is a self-contained artifact independent of later catalog edits. Created by `migration/014_plans.sql`, and also ensured at startup (`data_layer.ensure_plans_table`) so the committed DB — which predates it — gains the table without a rebuild. |
 
 `data_layer.load_data_from_db()` reconstructs this into the same nested dict shape the engine in
 `app.py` operates on:
