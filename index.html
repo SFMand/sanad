@@ -10,30 +10,72 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" />
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" />
   <style>
     :root {
-      --bg: #0E1116;
-      --panel: #171B22;
-      --raised: #1B212C;
-      --ink: #E6EAF0;
-      --muted: #8A93A6;
-      --line: #262B35;
-      --primary: #5EEAD4;
-      --primary-ink: #0E1116;
-      --accent: #F5A623;
-      --accent-ink: #0E1116;
-      --warn: #FBBF24;
-      --warn-bg: rgba(245, 166, 35, .15);
-      --eligible: #4ADE80;
-      --focus: #F5A623;
-      --bubble-user: var(--primary);
-      --bubble-bot: var(--raised);
-      --danger: #F87171;
+      /* ============ EduGate design system — KSU Academic Portal ============
+         Teal carries identity (crest, headings, links, eligible highlights).
+         Navy carries structure (menus, badges, table headers).
+         Sky-blue is the single action color — reserved for buttons. */
+      --teal-900: #054f4f;
+      --teal-700: #0a7d7d;
+      --teal-600: #0a8e8e;   /* primary brand / identity */
+      --teal-500: #12a3a3;
+      --teal-100: #d9f0ef;
+      --teal-050: #effaf9;
+      --navy-900: #0f3f5c;
+      --navy-700: #17567f;   /* structure: menu head, badges, table head */
+      --navy-600: #1c6690;
+      --navy-100: #dbe8f1;
+      --sky-600: #1f93c7;
+      --sky-500: #29a3d4;    /* action */
+      --sky-100: #dcf0fa;
 
-      /* Type */
-      --font-head: "Space Grotesk", "IBM Plex Sans Arabic", "Noto Sans Arabic", system-ui, sans-serif;
-      --font-body: "Inter", "IBM Plex Sans Arabic", "Noto Sans Arabic", "Segoe UI", system-ui, sans-serif;
+      --bg: #f4f7f9;         /* canvas */
+      --panel: #ffffff;      /* surface */
+      --raised: #f7fafb;
+      --ink: #1f2a33;
+      --ink-soft: #40505c;
+      --muted: #6b7883;
+      --line: #e4e9ed;
+      --line-soft: #eef2f5;
+      --teal: var(--teal-600);
+      --navy: var(--navy-700);
+      /* --primary drives interactive/action surfaces → the reserved sky-blue */
+      --primary: #29a3d4;
+      --primary-ink: #ffffff;
+      --primary-deep: #1f93c7;
+      --deep: #0f3f5c;
+      --accent: #c9871f;     /* warning / unverified */
+      --accent-ink: #ffffff;
+      --warn: #8a5d0f;
+      --warn-bg: #fbf1de;
+      --warn-line: #f0dcae;
+      /* "eligible" var kept for legacy "done" fills → success green */
+      --eligible: #1f9d6b;
+      --focus: #29a3d4;
+      --bubble-user: var(--teal-600);   /* identity teal for the student's own turns */
+      --bubble-bot: #ffffff;
+      --danger: #c1443e;
+
+      /* Semantic course-state tints — green=completed, teal=eligible, gray=locked */
+      --done: #1f9d6b;
+      --done-bg: #e5f4ee;
+      --done-line: #bfe3d3;
+      --elig: #0a8e8e;
+      --elig-bg: #effaf9;
+      --elig-line: #d9f0ef;
+      --locked-bg: #f4f7f9;
+      --locked-line: #e4e9ed;
+      --amber: #c9871f;
+      --amber-bg: #fbf1de;
+      --amber-line: #f0dcae;
+
+      /* Type — one superfamily across scripts; Arabic leads, Latin supports */
+      --font-ar: "IBM Plex Sans Arabic", system-ui, sans-serif;
+      --font-en: "IBM Plex Sans", system-ui, sans-serif;
+      --font-head: "IBM Plex Sans Arabic", "IBM Plex Sans", system-ui, sans-serif;
+      --font-body: "IBM Plex Sans Arabic", "IBM Plex Sans", system-ui, sans-serif;
       --fs-xs: .72rem;
       --fs-sm: .82rem;
       --fs-base: .94rem;
@@ -53,16 +95,16 @@
       --sp-8: 32px;
       --sp-10: 40px;
 
-      /* Radius */
-      --r-sm: 8px;
-      --r-md: 12px;
+      /* Radius — small and civic */
+      --r-sm: 6px;
+      --r-md: 10px;
       --r-lg: 16px;
       --r-pill: 999px;
       --radius: var(--r-md);
 
-      /* Elevation */
-      --shadow-sm: 0 1px 2px rgba(0, 0, 0, .3);
-      --shadow: 0 1px 3px rgba(0, 0, 0, .35), 0 6px 20px rgba(0, 0, 0, .25);
+      /* Elevation — soft, low, navy-tinted */
+      --shadow-sm: 0 1px 2px rgba(15, 63, 92, .06), 0 1px 3px rgba(15, 63, 92, .05);
+      --shadow: 0 4px 14px rgba(15, 63, 92, .08);
 
       /* Motion */
       --ease: cubic-bezier(.4, 0, .2, 1);
@@ -1406,6 +1448,123 @@
     }
 
     /* What-if simulator */
+    .saved-plans {
+      border: 1px solid var(--line);
+      border-radius: var(--r-md);
+      padding: var(--sp-4);
+      margin-bottom: var(--sp-4);
+      background: var(--raised);
+    }
+    .saved-head h3 {
+      font-size: var(--fs-md);
+      font-weight: 600;
+    }
+    .saved-head p {
+      color: var(--muted);
+      font-size: var(--fs-sm);
+      margin: 2px 0 var(--sp-3);
+    }
+    .saved-controls {
+      display: flex;
+      gap: var(--sp-3);
+      flex-wrap: wrap;
+      align-items: flex-end;
+      margin-bottom: var(--sp-2);
+    }
+    .saved-field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: var(--fs-sm);
+    }
+    .saved-field.grow {
+      flex: 1;
+      min-width: 160px;
+    }
+    .saved-field span {
+      color: var(--muted);
+      font-size: var(--fs-xs);
+    }
+    .saved-field input {
+      border: 1px solid var(--line);
+      background: var(--bg);
+      color: var(--ink);
+      border-radius: var(--r-sm);
+      padding: 8px 10px;
+      font: inherit;
+      min-width: 150px;
+    }
+    .saved-field.grow input {
+      width: 100%;
+      min-width: 0;
+    }
+    .saved-status {
+      font-size: var(--fs-xs);
+      color: var(--muted);
+      margin-bottom: var(--sp-3);
+      min-height: 1.1em;
+    }
+    .saved-status.ok {
+      color: var(--primary);
+    }
+    .saved-status.err {
+      color: var(--danger);
+    }
+    .saved-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-2);
+    }
+    .saved-empty {
+      color: var(--muted);
+      font-size: var(--fs-sm);
+    }
+    .saved-item {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-3);
+      flex-wrap: wrap;
+      border: 1px solid var(--line);
+      border-radius: var(--r-sm);
+      padding: 10px 12px;
+      background: var(--bg);
+    }
+    .saved-item-main {
+      flex: 1;
+      min-width: 140px;
+    }
+    .saved-item-name {
+      font-weight: 600;
+      font-size: var(--fs-sm);
+    }
+    .saved-item-meta {
+      color: var(--muted);
+      font-size: var(--fs-xs);
+      margin-top: 2px;
+    }
+    .saved-item-actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .saved-btn {
+      font-size: var(--fs-xs);
+      font-weight: 600;
+      padding: 5px 10px;
+      border-radius: var(--r-sm);
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--ink);
+      cursor: pointer;
+      transition: border-color var(--dur) var(--ease), color var(--dur) var(--ease);
+    }
+    .saved-btn:hover {
+      border-color: var(--muted);
+    }
+    .saved-btn.danger:hover {
+      border-color: var(--danger);
+      color: var(--danger);
+    }
     .whatif {
       border: 1px solid var(--line);
       border-radius: var(--r-md);
@@ -1816,55 +1975,288 @@
         animation: none !important;
       }
     }
+
+    /* ============================================================
+       EduGate portal shell — appended last so source order wins.
+       Teal identity · navy structure · sky action. RTL-first.
+       ============================================================ */
+    .wrap { max-width: 1180px; margin: 0 auto; padding-inline: clamp(14px, 3vw, 24px); }
+    html, body { height: auto; }
+    body { min-height: 100vh; background: var(--bg); }
+    main { flex: 1 1 auto; display: block; padding: 0; gap: 0; min-height: 0; }
+    h1, h2, h3 { font-weight: 700; }
+    :focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(41, 163, 212, .45); border-radius: 6px; }
+
+    /* ---- Semantic course-state tints (green=completed, teal=eligible, gray=locked) ---- */
+    .cell.completed { background: var(--done-bg); border-color: var(--done-line); }
+    .cell.completed .cell-code, .cell.completed .state-ic { color: var(--done); }
+    .cell.eligible { background: var(--elig-bg); border-color: var(--elig-line); }
+    .cell.eligible .cell-code { color: var(--elig); }
+    .cell.locked { background: var(--locked-bg); border-color: var(--locked-line); }
+    .swatch { border: 1px solid var(--line); }
+    .swatch.completed { background: var(--done-bg); border-color: var(--done-line); }
+    .swatch.eligible { background: var(--elig-bg); border-color: var(--elig-line); }
+    .swatch.locked { background: var(--locked-bg); border-color: var(--locked-line); }
+    .course.eligible { border: 1px solid var(--elig-line); background: var(--elig-bg); }
+    .progress-fill { background: linear-gradient(90deg, var(--teal-700), var(--teal-500)); }
+    .elective-item .efill { background: var(--teal-600); }
+    .elective-item.done .efill { background: var(--done); }
+    .grad-banner.show { border-color: var(--elig-line); background: linear-gradient(120deg, var(--elig-bg), var(--done-bg)); }
+    .chip:hover { background: var(--elig-bg); }
+    .chat { background: var(--bg); }
+    .msg.bot { border: 1px solid var(--line); box-shadow: var(--shadow-sm); }
+    .empty-state .empty-ic { background: var(--teal-050); color: var(--teal-600); border: 1px solid var(--teal-100); box-shadow: none; }
+    .brand-mark { background: linear-gradient(140deg, var(--teal-600), var(--teal-900)); border: 0; color: #fff; }
+    .badge.gateway { background: var(--teal-050); color: var(--teal-700); }
+    .btn.primary { background: var(--sky-500); border-color: var(--sky-500); color: #fff; }
+    .btn.primary:hover { background: var(--sky-600); filter: none; }
+
+    /* ---- Portal header ---- */
+    header.site-header { display: block; background: var(--panel); border-bottom: 1px solid var(--line); padding: 0; }
+    .header-rule { height: 3px; background: linear-gradient(90deg, var(--teal-600), var(--navy-700)); }
+    .site-header .wrap { display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap; padding-top: 12px; padding-bottom: 12px; }
+    .site-brand { display: flex; align-items: center; gap: 14px; }
+    .site-brand .ksu-logo { height: 52px; width: auto; display: block; }
+    .site-brand .divider { width: 1px; height: 44px; background: var(--line); }
+    .site-brand .brand-title { font-family: var(--font-ar); font-weight: 700; font-size: clamp(1.1rem, 2.2vw, 1.4rem); color: var(--teal-700); line-height: 1.1; letter-spacing: -.01em; }
+    .site-brand .brand-sub { font-family: var(--font-ar); font-size: 12.5px; color: var(--muted); margin-top: 3px; }
+    .header-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .icon-btn { position: relative; min-width: 58px; height: 52px; padding: 0 8px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); color: var(--ink-soft); display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; cursor: pointer; font-family: var(--font-ar); transition: .15s; }
+    .icon-btn:hover { border-color: var(--teal-500); color: var(--teal-700); background: var(--teal-050); }
+    .icon-btn .ic { width: 19px; height: 19px; }
+    .icon-btn .lbl { font-size: 10.5px; line-height: 1; }
+    .icon-btn .bell-badge { position: absolute; top: 4px; inset-inline-end: 6px; min-width: 17px; height: 17px; padding: 0 4px; border-radius: 999px; background: var(--danger); color: #fff; font-size: 10.5px; font-weight: 700; line-height: 17px; text-align: center; }
+    .fontsize { display: inline-flex; flex-direction: column; align-items: center; gap: 4px; padding: 0 4px; }
+    .fontsize .fs-label { font-family: var(--font-ar); font-size: 10.5px; color: var(--muted); }
+    .fontsize .fs-controls { display: inline-flex; align-items: center; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+    .fontsize button { border: 0; background: var(--panel); color: var(--ink-soft); padding: 7px 11px; cursor: pointer; font-weight: 700; font-size: 14px; line-height: 1; }
+    .fontsize button:hover { background: var(--teal-050); color: var(--teal-700); }
+    .fontsize .fs-aa { padding: 7px 8px; font-size: 13px; color: var(--muted); border-inline: 1px solid var(--line); font-weight: 600; }
+
+    /* ---- Portal two-column layout: content + right-hand sidebar ---- */
+    .portal { max-width: 1180px; margin: 0 auto; padding: 22px clamp(14px, 3vw, 24px) 8px; display: grid; grid-template-columns: 320px 1fr; gap: 22px; align-items: start; }
+    .sidebar { position: sticky; top: 16px; }
+    .side-nav { border: 1px solid var(--line); border-radius: var(--r-md); overflow: hidden; box-shadow: var(--shadow-sm); background: var(--panel); }
+    .side-nav .nav-head { background: var(--navy-700); color: #fff; font-family: var(--font-ar); font-weight: 700; font-size: 15px; padding: 14px 16px; display: flex; align-items: center; gap: 10px; }
+    .side-nav .nav-item { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; padding: 14px 16px; border: 0; border-bottom: 1px dashed var(--line); background: none; font-family: var(--font-ar); font-size: 14.5px; color: var(--ink-soft); cursor: pointer; text-align: start; transition: .15s; }
+    .side-nav .nav-item:last-child { border-bottom: 0; }
+    .side-nav .nav-item:hover { background: var(--teal-050); color: var(--teal-700); }
+    .side-nav .nav-item.active { background: var(--teal-050); color: var(--teal-700); font-weight: 700; border-inline-start: 3px solid var(--teal-600); padding-inline-start: 13px; }
+    .side-nav .nav-item .nav-left { display: inline-flex; align-items: center; gap: 10px; }
+    .side-nav .nav-item .ic { width: 18px; height: 18px; flex: none; }
+    .side-nav .nav-item .chev { color: var(--muted); font-size: 16px; line-height: 1; }
+    .side-nav .nav-item.disabled { color: var(--muted); cursor: not-allowed; opacity: .8; }
+    .side-nav .nav-item.disabled:hover { background: none; color: var(--muted); }
+
+    /* ---- Student info panel (signature EduGate pattern) ---- */
+    .info-panel { border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--panel); overflow: hidden; box-shadow: var(--shadow-sm); margin-bottom: 22px; }
+    .info-grid { display: grid; grid-template-columns: repeat(4, 1fr); }
+    .info-cell { padding: 16px 20px; border-inline-start: 1px solid var(--line-soft); border-top: 1px solid var(--line-soft); }
+    .info-cell .lbl { display: flex; align-items: center; gap: 8px; color: var(--ink-soft); font-family: var(--font-ar); font-weight: 600; font-size: 13.5px; }
+    .info-cell .lbl .ic { width: 15px; height: 15px; color: var(--teal-600); flex: none; }
+    .info-cell .val { margin-top: 8px; color: var(--teal-600); font-family: var(--font-ar); font-weight: 600; font-size: 15px; }
+    .info-cell .val.name { color: var(--ink); font-weight: 700; }
+    .info-cell .val.units b { color: var(--ink); }
+
+    /* ---- Content column + panels ---- */
+    #appViews.views { max-width: none; margin: 0; padding: 0; display: block; flex: none; }
+    .panel.view.active { min-height: 46vh; }
+    #appViews .plan-scroll { flex: none; overflow: visible; min-height: 0; }
+    #advisorView.view.active { height: calc(100vh - 260px); min-height: 460px; }
+
+    /* ---- Portal home ---- */
+    #homeView.view.active { display: block; }
+    .portal-home .home-title-wrap { text-align: center; margin: 4px 0 20px; }
+    .portal-home .home-title { display: inline-block; position: relative; font-family: var(--font-ar); font-weight: 700; font-size: clamp(20px, 3vw, 26px); color: var(--ink); padding-bottom: 12px; }
+    .portal-home .home-title::after { content: ""; position: absolute; bottom: 0; inset-inline: 0; margin-inline: auto; width: 70px; height: 4px; background: var(--navy-700); border-radius: var(--r-pill); }
+    .portal-home .home-intro { text-align: center; max-width: 72ch; margin: 0 auto 24px; color: var(--ink-soft); font-family: var(--font-ar); line-height: 1.9; font-size: 14.5px; }
+    .home-cards { display: flex; flex-direction: column; gap: 14px; }
+    .home-card { display: flex; align-items: center; justify-content: space-between; gap: 16px; width: 100%; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-md); padding: 18px 22px; cursor: pointer; box-shadow: var(--shadow-sm); text-align: start; font: inherit; color: inherit; transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease; }
+    .home-card:hover { border-color: var(--teal-100); box-shadow: var(--shadow); transform: translateY(-2px); }
+    .home-card .hc-title { display: flex; align-items: center; gap: 10px; font-family: var(--font-ar); font-weight: 700; font-size: 16.5px; color: var(--teal-700); }
+    .home-card .hc-title .sq { width: 11px; height: 11px; border-radius: 3px; flex: none; }
+    .home-card.plan .hc-title .sq { background: var(--teal-600); }
+    .home-card.road .hc-title .sq { background: var(--navy-700); }
+    .home-card.adv .hc-title .sq { background: var(--sky-500); }
+    .home-card .hc-desc { margin-top: 7px; font-family: var(--font-ar); font-size: 13.5px; color: var(--muted); line-height: 1.7; }
+    .home-card .hc-arrow { flex: none; color: var(--sky-500); }
+    .home-card .hc-arrow .ic { width: 24px; height: 24px; }
+
+    /* ---- Plan progress card + major selector ---- */
+    .progress-card { margin: 0 16px 12px; padding: 16px 18px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-md); box-shadow: var(--shadow-sm); }
+    .progress-card .pc-stats { display: flex; gap: 22px; flex-wrap: wrap; margin-bottom: 12px; }
+    .progress-card .pc-stat { flex: 1 1 110px; }
+    .progress-card .pc-stat .v { font-size: 22px; font-weight: 700; color: var(--ink); }
+    .progress-card .pc-stat .l { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+    .progress-card .pc-stat.elig .v { color: var(--teal-600); }
+    .progress-card .pc-stat.rem .v { color: var(--done); }
+    .progress-card .progress { min-width: 0; max-width: none; flex: none; }
+    .progress-card .pc-pct { font-size: 12px; color: var(--muted); margin-top: 6px; }
+    .major-select { display: inline-flex; align-items: center; gap: 8px; }
+    .major-select select { font: inherit; font-family: var(--font-ar); font-weight: 600; color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-sm); padding: 9px 34px 9px 13px; cursor: pointer; -webkit-appearance: none; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7883' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: left 11px center; }
+    :root[dir="rtl"] .major-select select { padding: 9px 13px 9px 34px; background-position: right 11px center; }
+    .major-select select:focus-visible { box-shadow: 0 0 0 3px rgba(41, 163, 212, .45); border-color: var(--teal-500); }
+
+    /* ---- Slim institutional footer ---- */
+    footer.site-footer { display: block; background: transparent; margin-top: auto; padding: 34px 16px 26px; text-align: center; color: var(--muted); }
+    .site-footer .foot-rule { width: 40px; height: 3px; background: var(--teal-600); border-radius: var(--r-pill); margin: 0 auto 14px; }
+    .site-footer p { margin: 0; font-size: 13px; color: var(--muted); background: none; border: 0; padding: 0; max-width: none; text-align: center; }
+    .site-footer p + p { margin-top: 6px; }
+
+    /* ---- Responsive ---- */
+    @media (max-width: 900px) {
+      .portal { grid-template-columns: 1fr; }
+      .sidebar { position: static; order: 2; }
+      .content { order: 1; }
+      .info-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 560px) {
+      .site-brand .ksu-logo { height: 42px; }
+      .icon-btn .lbl, .fontsize .fs-label { display: none; }
+      .info-grid { grid-template-columns: 1fr; }
+    }
+
   </style>
 </head>
 
 <body>
-  <header>
-    <div class="brand">
-      <span class="brand-mark" id="brandMark" aria-hidden="true"></span>
-      <div class="brand-text">
-        <h1 id="appTitle">Sanad</h1>
-        <p id="appSubtitle">KSU CCIS advising assistant</p>
+  <!-- ===================== PORTAL HEADER ===================== -->
+  <header class="site-header">
+    <div class="wrap">
+      <div class="site-brand">
+        <img class="ksu-logo" src="/static/ksu-logo.png" alt="جامعة الملك سعود · King Saud University" />
+        <span class="divider" aria-hidden="true"></span>
+        <div class="brand-text">
+          <div class="brand-title" id="appTitle">سَنَد · المرشد الأكاديمي الذكي</div>
+          <div class="brand-sub" id="appSubtitle">كلية علوم الحاسب والمعلومات · جامعة الملك سعود</div>
+        </div>
       </div>
-    </div>
-    <div class="progress" aria-live="polite">
-      <div class="progress-top">
-        <span id="progressLabel">Credits completed</span>
-        <strong id="progressCredits">0 / 128</strong>
+      <div class="header-actions">
+        <button class="icon-btn" id="nudgeBell" aria-label="Notifications" aria-expanded="false" aria-controls="nudgeTray">
+          <span class="bell-ic" id="bellIc" aria-hidden="true"></span>
+          <span class="lbl" id="bellLabel">التنبيهات</span>
+          <span class="bell-badge" id="bellBadge" hidden>0</span>
+        </button>
+        <button class="icon-btn" id="homeBtn" data-view="home" aria-label="Home">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>
+          <span class="lbl" id="homeBtnLabel">الرئيسية</span>
+        </button>
+        <div class="fontsize">
+          <span class="fs-label" id="fsLabel">حجم الخط</span>
+          <div class="fs-controls" role="group" aria-label="Font size">
+            <button type="button" id="fsUp" aria-label="Increase font size">+</button>
+            <span class="fs-aa" aria-hidden="true">Aa</span>
+            <button type="button" id="fsDown" aria-label="Decrease font size">−</button>
+          </div>
+        </div>
+        <button class="icon-btn" id="logoutBtn" aria-label="Logout">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
+          <span class="lbl" id="logoutLabel">خروج</span>
+        </button>
+        <div class="seg-toggle" role="group" aria-label="Language / اللغة">
+          <button id="langAr" data-lang="ar" aria-pressed="true">ع</button>
+          <button id="langEn" data-lang="en" aria-pressed="false">EN</button>
+        </div>
       </div>
-      <div class="progress-bar">
-        <div class="progress-fill" id="progressFill"></div>
-      </div>
-    </div>
-    <button class="bell" id="nudgeBell" aria-label="Notifications" aria-expanded="false" aria-controls="nudgeTray">
-      <span class="bell-ic" id="bellIc" aria-hidden="true"></span>
-      <span class="bell-badge" id="bellBadge" hidden>0</span>
-    </button>
-    <div class="seg-toggle" role="group" aria-label="Language / اللغة">
-      <button id="langEn" data-lang="en" aria-pressed="true">EN</button>
-      <button id="langAr" data-lang="ar" aria-pressed="false">ع</button>
     </div>
   </header>
+  <div class="header-rule" aria-hidden="true"></div>
 
   <main>
-    <div class="seg-toggle viewtabs" id="viewTabs" role="tablist" aria-label="View">
-      <button id="tabPlan" data-view="plan" role="tab" aria-selected="true" aria-pressed="true">Plan</button>
-      <button id="tabRoadmap" data-view="roadmap" role="tab" aria-selected="false" aria-pressed="false">Roadmap</button>
-      <button id="tabAdvisor" data-view="advisor" role="tab" aria-selected="false" aria-pressed="false">Advisor</button>
-    </div>
+    <div class="portal">
+      <!-- right-hand main menu -->
+      <aside class="sidebar">
+        <nav class="side-nav" aria-label="Main">
+          <div class="nav-head"><span aria-hidden="true">☰</span> <span id="menuTitle">القائمة الرئيسية</span></div>
+          <button class="nav-item active" id="navHome" data-view="home" role="tab" aria-selected="true">
+            <span class="nav-left"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg><span id="navHomeLabel">الرئيسية</span></span>
+            <span class="chev" aria-hidden="true">‹</span>
+          </button>
+          <button class="nav-item" id="navPlan" data-view="plan" role="tab" aria-selected="false">
+            <span class="nav-left"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 2v4"/><path d="M16 2v4"/></svg><span id="navPlanLabel">الخطة الدراسية</span></span>
+            <span class="chev" aria-hidden="true">‹</span>
+          </button>
+          <button class="nav-item" id="navRoadmap" data-view="roadmap" role="tab" aria-selected="false">
+            <span class="nav-left"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="19" r="3"/><path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/><circle cx="18" cy="5" r="3"/></svg><span id="navRoadmapLabel">خارطة التخرج</span></span>
+            <span class="chev" aria-hidden="true">‹</span>
+          </button>
+          <button class="nav-item" id="navAdvisor" data-view="advisor" role="tab" aria-selected="false">
+            <span class="nav-left"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg><span id="navAdvisorLabel">المرشد الذكي</span></span>
+            <span class="chev" aria-hidden="true">‹</span>
+          </button>
+          <div class="nav-item disabled" aria-disabled="true">
+            <span class="nav-left"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg><span id="navReq">الطلبات الإلكترونية</span></span>
+            <span class="chev" aria-hidden="true">﹣</span>
+          </div>
+          <div class="nav-item disabled" aria-disabled="true">
+            <span class="nav-left"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/></svg><span id="navReports">التقارير الأكاديمية</span></span>
+            <span class="chev" aria-hidden="true">﹣</span>
+          </div>
+          <div class="nav-item disabled" aria-disabled="true">
+            <span class="nav-left"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg><span id="navProfile">بياناتي الشخصية</span></span>
+            <span class="chev" aria-hidden="true">﹣</span>
+          </div>
+        </nav>
+      </aside>
 
-    <div class="views">
+      <div class="content">
+        <!-- student info panel -->
+        <div class="info-panel"><div class="info-grid" id="infoGrid"></div></div>
+
+        <!-- ===================== HOME ===================== -->
+        <section class="home view active" id="homeView" aria-label="Home">
+          <div class="portal-home">
+            <div class="home-title-wrap"><span class="home-title" id="homeTitle">الصفحة الرئيسية</span></div>
+            <p class="home-intro" id="homeIntro">سَنَد يقرأ سجلك الأكاديمي من النظام الأكاديمي، ويحسب المقررات المتاحة لك بدقّة وفق الخطة المعتمدة، ويرسم لك أقصر طريق للتخرج دون تخمين للمتطلبات السابقة.</p>
+            <div class="home-cards">
+              <button class="home-card plan" data-view="plan">
+                <div class="hc-main">
+                  <div class="hc-title"><span class="sq" aria-hidden="true"></span><span id="hcPlanT">الخطة الدراسية</span></div>
+                  <div class="hc-desc" id="hcPlanD">شبكة المقررات لكل مستوى، ملوّنة حسب حالتك: مكتمل، متاح الآن، أو مقفل مع بيان المتطلب الناقص.</div>
+                </div>
+                <span class="hc-arrow" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg></span>
+              </button>
+              <button class="home-card road" data-view="roadmap">
+                <div class="hc-main">
+                  <div class="hc-title"><span class="sq" aria-hidden="true"></span><span id="hcRoadT">خارطة التخرج</span></div>
+                  <div class="hc-desc" id="hcRoadD">جدول فصلي حتى التخرج مع تاريخ متوقع، ومحاكاة «ماذا لو» لعدد الوحدات والفصول الصيفية.</div>
+                </div>
+                <span class="hc-arrow" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg></span>
+              </button>
+              <button class="home-card adv" data-view="advisor">
+                <div class="hc-main">
+                  <div class="hc-title"><span class="sq" aria-hidden="true"></span><span id="hcAdvT">المرشد الذكي</span></div>
+                  <div class="hc-desc" id="hcAdvD">اسأل «ماذا أسجّل الفصل القادم؟» فيوصي بالمقررات المتاحة فقط، ويشرح سبب قفل أي مقرر.</div>
+                </div>
+                <span class="hc-arrow" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg></span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+    <div class="views" id="appViews">
       <section class="panel view active" id="planView" role="tabpanel" aria-labelledby="coursesHeading">
         <div class="panel-head">
           <h2 id="coursesHeading">Degree plan</h2>
-          <p id="coursesHelp">Pick your track, upload your transcript, or click a course to mark it done.</p>
+          <p id="coursesHelp">Pick your major, upload your transcript, or click a course to mark it done.</p>
+        </div>
+
+        <div class="progress-card" aria-live="polite">
+          <div class="pc-stats">
+            <div class="pc-stat"><div class="v" id="progressCredits">0 / 128</div><div class="l" id="progressLabel">Credits completed</div></div>
+            <div class="pc-stat elig"><div class="v" id="pcElig">0</div><div class="l" id="pcEligLabel">Eligible now</div></div>
+            <div class="pc-stat rem"><div class="v" id="pcRem">0</div><div class="l" id="pcRemLabel">Remaining</div></div>
+          </div>
+          <div class="progress"><div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div></div>
+          <div class="pc-pct" id="pcPct">0%</div>
         </div>
 
         <div class="plan-toolbar">
-          <span class="track-label" id="trackLabel">Track</span>
-          <div class="seg-toggle" id="trackToggle" role="group" aria-label="Track"></div>
-          <button class="btn accent" id="uploadBtn">Upload transcript (PDF)</button>
+          <label class="major-select">
+            <span class="track-label" id="trackLabel">Major</span>
+            <select id="majorSelect" aria-label="Major"></select>
+          </label>
+          <button class="btn primary" id="uploadBtn">Upload transcript (PDF)</button>
           <button class="btn ghost" id="demoBtn">Load demo student</button>
           <button class="btn ghost" id="clearBtn">Clear</button>
           <input id="fileInput" type="file" accept="application/pdf,.pdf" class="sr-only" />
@@ -1915,6 +2307,26 @@
 
         <div class="grad-banner" id="gradBanner"></div>
 
+        <div class="saved-plans" id="savedPlansPanel">
+          <div class="saved-head">
+            <h3 id="savedTitle">Saved plans</h3>
+            <p id="savedHelp">Save named versions of this plan — each captures your current courses, track, and simulator settings — and reload them anytime.</p>
+          </div>
+          <div class="saved-controls">
+            <label class="saved-field" for="handleInput">
+              <span id="handleLabel">Your name or ID</span>
+              <input type="text" id="handleInput" autocomplete="off" />
+            </label>
+            <label class="saved-field grow" for="planNameInput">
+              <span id="planNameLabel">Plan name</span>
+              <input type="text" id="planNameInput" autocomplete="off" />
+            </label>
+            <button class="btn primary" id="savePlanBtn" type="button">Save plan</button>
+          </div>
+          <p class="saved-status" id="savedStatus" role="status" aria-live="polite"></p>
+          <div class="saved-list" id="savedList"></div>
+        </div>
+
         <div class="whatif" id="whatifPanel">
           <div class="whatif-head">
             <h3 id="whatifTitle">What-if simulator</h3>
@@ -1944,6 +2356,8 @@
         </div>
       </section>
     </div>
+      </div>
+    </div>
   </main>
 
   <aside class="nudge-tray" id="nudgeTray" aria-label="Notifications" hidden>
@@ -1967,7 +2381,9 @@
   </div>
   <div class="course-info-backdrop" id="courseInfoBackdrop" hidden></div>
 
-  <footer>
+  <footer class="site-footer" id="siteFooter">
+    <div class="foot-rule" aria-hidden="true"></div>
+    <p id="footCopyright">© جامعة الملك سعود — كلية علوم الحاسب والمعلومات. جميع الحقوق محفوظة.</p>
     <p id="disclaimer">Planning aid only — not a substitute for your official KSU academic advisor.</p>
   </footer>
 
@@ -2010,12 +2426,44 @@
     const STRINGS = {
       en: {
         dir: "ltr",
-        appTitle: "Sanad",
-        appSubtitle: "KSU CCIS degree-plan advising assistant",
+        appTitle: "Sanad · Smart Academic Advisor",
+        appSubtitle: "College of Computer & Information Sciences · King Saud University",
+        navNotifications: "Alerts",
+        navHome: "Home",
+        navPlan: "Degree plan",
+        navRoadmap: "Graduation map",
+        navAdvisor: "Smart advisor",
+        navReq: "E-services",
+        navReports: "Academic reports",
+        navProfile: "My profile",
+        menuTitle: "Main menu",
+        fsLabel: "Font size",
+        logout: "Logout",
+        collegeName: "Computer & Information Sciences",
+        currentTerm: "First Semester 1447/1448",
+        infoStudent: "Student",
+        infoId: "University ID",
+        infoCollege: "College",
+        infoMajor: "Major",
+        infoTerm: "Registration term",
+        infoUnits: "Completed units",
+        progressRemLabel: "Remaining",
+        pctOfPlan: (p) => `${p}% of the plan`,
+        footCopyright: "© King Saud University — College of Computer and Information Sciences. All rights reserved.",
+        home: {
+          title: "Home",
+          intro: "Sanad reads your academic record from the academic system, computes exactly which courses you're eligible for under your approved plan, and maps your shortest path to graduation — never guessing a prerequisite.",
+          planT: "Degree plan",
+          planD: "A per-level course grid, colored by your status: completed, eligible now, or locked with the exact missing prerequisite.",
+          roadT: "Graduation map",
+          roadD: "A term-by-term schedule to graduation with a projected date, plus a what-if simulator for credit loads and summer terms.",
+          advT: "Smart advisor",
+          advD: "Ask “what should I register next term?” — it recommends only eligible courses and explains why any course is locked."
+        },
         progressLabel: "Credits completed",
         coursesHeading: "Degree plan",
-        coursesHelp: "Pick your track, upload your transcript, or click a course to mark it done.",
-        trackLabel: "Track",
+        coursesHelp: "Pick your major, upload your transcript, or click a course to mark it done.",
+        trackLabel: "Major",
         trackNames: { general: "General", ai: "Artificial Intelligence", cyber: "Cyber Security" },
         uploadBtn: "Upload transcript (PDF)",
         searchPlaceholder: "Search by code or title, e.g. عال 212, Algorithms",
@@ -2045,6 +2493,27 @@
         whatifSame: (term) => `Still graduating ${term} — no change.`,
         whatifEarlier: (base, next) => `${base} → ${next}  (graduate earlier ✓)`,
         whatifLater: (base, next) => `${base} → ${next}  (graduate later)`,
+        savedTitle: "Saved plans",
+        savedHelp: "Save named versions of this plan — each captures your current courses, track, and simulator settings — and reload them anytime.",
+        handleLabel: "Your name or ID",
+        planNameLabel: "Plan name",
+        savePlanBtn: "Save plan",
+        loadBtn: "Load",
+        renameBtn: "Rename",
+        deleteBtn: "Delete",
+        savedEmpty: "No saved plans yet.",
+        savedNeedHandle: "Enter your name or ID to save and see your plans.",
+        savedNeedName: "Give the plan a name first.",
+        savedSaved: (name) => `Saved “${name}” ✓`,
+        savedLoaded: (name) => `Loaded “${name}”.`,
+        savedRenamed: "Renamed ✓",
+        savedDeleted: (name) => `Deleted “${name}”.`,
+        savedError: "Something went wrong. Please try again.",
+        savedMeta: (grad, terms) => `graduates ${grad} · ${terms} term${terms === 1 ? "" : "s"}`,
+        savedComplete: "all requirements complete",
+        savedRenamePrompt: "New name for this plan:",
+        savedDeleteConfirm: (name) => `Delete “${name}”? This can’t be undone.`,
+        savedLoadConfirm: "Loading this plan will replace your current course selections. Continue?",
         nudgeTrayTitle: "For you",
         nudgeEmpty: "No suggestions right now.",
         courseInfoLabel: "Course description",
@@ -2092,12 +2561,44 @@
       },
       ar: {
         dir: "rtl",
-        appTitle: "سَنَد",
-        appSubtitle: "مساعد الإرشاد بكلية علوم الحاسب والمعلومات، جامعة الملك سعود",
+        appTitle: "سَنَد · المرشد الأكاديمي الذكي",
+        appSubtitle: "كلية علوم الحاسب والمعلومات · جامعة الملك سعود",
+        navNotifications: "التنبيهات",
+        navHome: "الرئيسية",
+        navPlan: "الخطة الدراسية",
+        navRoadmap: "خارطة التخرج",
+        navAdvisor: "المرشد الذكي",
+        navReq: "الطلبات الإلكترونية",
+        navReports: "التقارير الأكاديمية",
+        navProfile: "بياناتي الشخصية",
+        menuTitle: "القائمة الرئيسية",
+        fsLabel: "حجم الخط",
+        logout: "خروج",
+        collegeName: "علوم الحاسب والمعلومات",
+        currentTerm: "الفصل الأول ١٤٤٧/١٤٤٨",
+        infoStudent: "الطالب",
+        infoId: "الرقم الجامعي",
+        infoCollege: "الكلية",
+        infoMajor: "التخصص",
+        infoTerm: "فصل التسجيل",
+        infoUnits: "الوحدات المكتملة",
+        progressRemLabel: "المتبقّي",
+        pctOfPlan: (p) => `${toArabicDigits(p)}٪ من الخطة`,
+        footCopyright: "© جامعة الملك سعود — كلية علوم الحاسب والمعلومات. جميع الحقوق محفوظة.",
+        home: {
+          title: "الصفحة الرئيسية",
+          intro: "سَنَد يقرأ سجلك الأكاديمي من النظام الأكاديمي، ويحسب المقررات المتاحة لك بدقّة وفق الخطة المعتمدة، ويرسم لك أقصر طريق للتخرج دون تخمين للمتطلبات السابقة.",
+          planT: "الخطة الدراسية",
+          planD: "شبكة المقررات لكل مستوى، ملوّنة حسب حالتك: مكتمل، متاح الآن، أو مقفل مع بيان المتطلب الناقص.",
+          roadT: "خارطة التخرج",
+          roadD: "جدول فصلي حتى التخرج مع تاريخ متوقع، ومحاكاة «ماذا لو» لعدد الوحدات والفصول الصيفية.",
+          advT: "المرشد الذكي",
+          advD: "اسأل «ماذا أسجّل الفصل القادم؟» فيوصي بالمقررات المتاحة فقط، ويشرح سبب قفل أي مقرر."
+        },
         progressLabel: "الساعات المنجزة",
         coursesHeading: "الخطة الدراسية",
-        coursesHelp: "اختر مسارك، وارفع سجلك الأكاديمي، أو انقر على مقرر لتمييزه كمُنجز.",
-        trackLabel: "المسار",
+        coursesHelp: "اختر تخصصك، وارفع سجلك الأكاديمي، أو انقر على مقرر لتمييزه كمُنجز.",
+        trackLabel: "التخصص",
         trackNames: {},  // filled from program.track_names_ar
         uploadBtn: "رفع السجل الأكاديمي (PDF)",
         searchPlaceholder: "ابحث بالرمز أو الاسم، مثل: عال 212، خوارزميات",
@@ -2127,6 +2628,27 @@
         whatifSame: (term) => `ما زال التخرج ${term} — لا تغيير.`,
         whatifEarlier: (base, next) => `${base} ← ${next}  (تخرّج أبكر ✓)`,
         whatifLater: (base, next) => `${base} ← ${next}  (تخرّج أبعد)`,
+        savedTitle: "الخطط المحفوظة",
+        savedHelp: "احفظ نسخًا مسمّاة من هذه الخطة — تلتقط كل نسخة مقرراتك الحالية ومسارك وإعدادات المحاكي — وأعِد فتحها في أي وقت.",
+        handleLabel: "اسمك أو رقمك الجامعي",
+        planNameLabel: "اسم الخطة",
+        savePlanBtn: "احفظ الخطة",
+        loadBtn: "تحميل",
+        renameBtn: "إعادة تسمية",
+        deleteBtn: "حذف",
+        savedEmpty: "لا توجد خطط محفوظة بعد.",
+        savedNeedHandle: "أدخل اسمك أو رقمك الجامعي لحفظ خططك وعرضها.",
+        savedNeedName: "امنح الخطة اسمًا أولًا.",
+        savedSaved: (name) => `تم حفظ «${name}» ✓`,
+        savedLoaded: (name) => `تم تحميل «${name}».`,
+        savedRenamed: "تمت إعادة التسمية ✓",
+        savedDeleted: (name) => `تم حذف «${name}».`,
+        savedError: "حدث خطأ ما. حاول مرة أخرى.",
+        savedMeta: (grad, terms) => `التخرج ${grad} · ${terms} فصل`,
+        savedComplete: "اكتملت جميع المتطلبات",
+        savedRenamePrompt: "اسم جديد لهذه الخطة:",
+        savedDeleteConfirm: (name) => `حذف «${name}»؟ لا يمكن التراجع.`,
+        savedLoadConfirm: "سيؤدي تحميل هذه الخطة إلى استبدال اختياراتك الحالية. هل تريد المتابعة؟",
         nudgeTrayTitle: "من أجلك",
         nudgeEmpty: "لا توجد اقتراحات الآن.",
         courseInfoLabel: "وصف المقرر",
@@ -2176,10 +2698,13 @@
 
     // ---- State ----------------------------------------------------------------
     const state = {
-      lang: "en",
-      view: "plan",         // "plan" | "advisor"
+      lang: "ar",           // EduGate design is Arabic-RTL-first (EN toggle available)
+      view: "home",         // "home" | "plan" | "roadmap" | "advisor"
+      studentInfo: null,    // { name, id } populated when a demo/transcript record loads
+      fontScale: 1,         // header "حجم الخط" control
       track: "general",
       tracks: ["general"],
+      trackTotals: {},      // track -> graduation-credit requirement (majors differ)
       catalog: [],          // course objects
       byCode: {},           // code -> course
       degreePlans: {},      // track -> { level -> [codes] }
@@ -2196,6 +2721,8 @@
       whatifCap: 15,        // per-term credit cap for the what-if simulator
       whatifDefer: new Set(),  // codes deferred in the what-if simulator
       whatifSummer: false,  // include KSU summer terms in the what-if simulation
+      handle: "",           // identity for saved plans (name/ID; no login) — server-scoped
+      savedPlans: [],       // latest /plans/list response (summaries) for this handle
       messages: []          // {role:'user'|'assistant', content}
     };
 
@@ -2259,7 +2786,6 @@
       const s = t();
       document.documentElement.lang = state.lang;
       document.documentElement.dir = s.dir;
-      $("brandMark").innerHTML = icon("graduation-cap");
       $("appTitle").textContent = s.appTitle;
       $("appSubtitle").textContent = s.appSubtitle;
       $("progressLabel").textContent = s.progressLabel;
@@ -2278,9 +2804,24 @@
       $("reviewConfirm").textContent = s.reviewConfirm;
       $("reviewCancel").textContent = s.reviewCancel;
       $("disclaimer").textContent = s.disclaimer;
-      labelWithIcon("tabPlan", "calendar", s.tabPlan);
-      labelWithIcon("tabRoadmap", "route", s.tabRoadmap);
-      labelWithIcon("tabAdvisor", "message-circle", s.tabAdvisor);
+      // ---- Portal chrome (header actions, right-hand sidebar, footer) ----
+      $("bellLabel").textContent = s.navNotifications;
+      $("homeBtnLabel").textContent = s.navHome;
+      $("fsLabel").textContent = s.fsLabel;
+      $("logoutLabel").textContent = s.logout;
+      $("menuTitle").textContent = s.menuTitle;
+      $("navHomeLabel").textContent = s.navHome;
+      $("navPlanLabel").textContent = s.navPlan;
+      $("navRoadmapLabel").textContent = s.navRoadmap;
+      $("navAdvisorLabel").textContent = s.navAdvisor;
+      $("navReq").textContent = s.navReq;
+      $("navReports").textContent = s.navReports;
+      $("navProfile").textContent = s.navProfile;
+      $("pcEligLabel").textContent = s.legendEligible;
+      $("pcRemLabel").textContent = s.progressRemLabel;
+      $("footCopyright").textContent = s.footCopyright;
+      renderHome();
+      renderStudentBar();
       $("bellIc").innerHTML = icon("bell");
       $("roadmapHeading").textContent = s.roadmapHeading;
       $("roadmapHelp").textContent = s.roadmapHelp;
@@ -2289,6 +2830,12 @@
       $("capLabel").textContent = s.capLabel;
       $("summerLabel").textContent = s.summerLabel;
       $("deferLabel").textContent = s.deferLabel;
+      $("savedTitle").textContent = s.savedTitle;
+      $("savedHelp").textContent = s.savedHelp;
+      $("handleLabel").textContent = s.handleLabel;
+      $("planNameLabel").textContent = s.planNameLabel;
+      $("savePlanBtn").textContent = s.savePlanBtn;
+      renderSavedPlans();
       $("nudgeTrayTitle").textContent = s.nudgeTrayTitle;
       renderRoadmap();
       if (!$("whatifResult").hidden) runWhatif();  // re-render result in new language
@@ -2305,34 +2852,45 @@
     }
 
     function applyView() {
-      const views = { plan: "planView", roadmap: "roadmapView", advisor: "advisorView" };
-      const tabs = { plan: "tabPlan", roadmap: "tabRoadmap", advisor: "tabAdvisor" };
+      const views = { home: "homeView", plan: "planView", roadmap: "roadmapView", advisor: "advisorView" };
+      const nav = { home: "navHome", plan: "navPlan", roadmap: "navRoadmap", advisor: "navAdvisor" };
       Object.entries(views).forEach(([v, id]) => {
         $(id).classList.toggle("active", state.view === v);
       });
-      Object.entries(tabs).forEach(([v, id]) => {
-        $(id).setAttribute("aria-selected", String(state.view === v));
-        $(id).setAttribute("aria-pressed", String(state.view === v));
+      Object.entries(nav).forEach(([v, id]) => {
+        const on = state.view === v;
+        $(id).classList.toggle("active", on);
+        $(id).setAttribute("aria-selected", String(on));
       });
+      // The Home view lives beside the app-views container; hide the app views
+      // on Home so their space collapses. The student info panel + sidebar stay.
+      $("appViews").style.display = state.view === "home" ? "none" : "block";
+      window.scrollTo({ top: 0, behavior: "auto" });
       if (state.view === "advisor") $("chatInput").focus();
     }
 
+    // The site now serves many majors (CS tracks, CE, SWE, IS …) with different
+    // credit totals, so the selector is a dropdown rather than a few pills. Each
+    // option shows the major's graduation-credit requirement.
     function renderTrackToggle() {
-      const wrap = $("trackToggle");
-      wrap.textContent = "";
+      const sel = $("majorSelect");
+      sel.textContent = "";
+      const crWord = t().crSuffix;
       state.tracks.forEach((track) => {
-        const b = document.createElement("button");
-        b.type = "button";
-        b.textContent = trackName(track);
-        b.setAttribute("aria-pressed", String(track === state.track));
-        b.addEventListener("click", () => {
-          state.track = track;
-          resetWhatif();
-          renderTrackToggle();
-          refreshPlan();
-        });
-        wrap.appendChild(b);
+        const o = document.createElement("option");
+        o.value = track;
+        const tot = state.trackTotals[track];
+        o.textContent = tot ? `${trackName(track)} — ${tot} ${crWord}` : trackName(track);
+        if (track === state.track) o.selected = true;
+        sel.appendChild(o);
       });
+    }
+
+    function onMajorChange(track) {
+      if (!track || track === state.track) return;
+      state.track = track;
+      resetWhatif();
+      refreshPlan();
     }
 
     function renderProgress() {
@@ -2341,6 +2899,67 @@
       $("progressCredits").textContent = `${done} / ${total}`;
       const pct = total ? Math.min(100, Math.round((done / total) * 100)) : 0;
       $("progressFill").style.width = pct + "%";
+      const el = $("pcElig"); if (el) el.textContent = String((state.eligibleCodes || []).length);
+      const rm = $("pcRem"); if (rm) rm.textContent = String(Math.max(0, total - done));
+      const pc = $("pcPct"); if (pc) pc.textContent = t().pctOfPlan ? t().pctOfPlan(pct) : pct + "%";
+      renderStudentBar();   // keep the info-panel's completed-units cell in sync
+    }
+
+    // ---- Portal home (title, intro, service cards) ---------------------------
+    function renderHome() {
+      const hd = t().home;
+      if (!hd) return;
+      const set = (id, val) => { const e = $(id); if (e) e.textContent = val; };
+      set("homeTitle", hd.title);
+      set("homeIntro", hd.intro);
+      set("hcPlanT", hd.planT); set("hcPlanD", hd.planD);
+      set("hcRoadT", hd.roadT); set("hcRoadD", hd.roadD);
+      set("hcAdvT", hd.advT); set("hcAdvD", hd.advD);
+    }
+
+    // Small inline SVG icon (path data) for the info-panel labels.
+    const INFO_ICONS = {
+      student: '<circle cx="12" cy="8" r="4"/><path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/>',
+      id: '<line x1="4" x2="20" y1="9" y2="9"/><line x1="4" x2="20" y1="15" y2="15"/><line x1="10" x2="8" y1="3" y2="21"/><line x1="16" x2="14" y1="3" y2="21"/>',
+      college: '<path d="M3 21h18"/><path d="M6 21V8l6-4 6 4v13"/><path d="M10 12h4M10 16h4"/>',
+      major: '<path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>',
+      term: '<rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/>',
+      units: '<path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/>'
+    };
+    function infoIcon(name) {
+      return '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" '
+        + 'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (INFO_ICONS[name] || '') + '</svg>';
+    }
+
+    // ---- Student info panel — populated from the loaded record ----------------
+    function renderStudentBar() {
+      const grid = $("infoGrid"); if (!grid) return;
+      const s = t(), ar = state.lang === "ar", info = state.studentInfo, dash = "—";
+      const total = state.totalRequired || 128, done = effectiveCredits();
+      const num = (n) => ar ? toArabicDigits(n) : String(n);
+      const cells = [
+        { ic: "student", label: s.infoStudent, val: info ? info.name : dash, cls: "name" },
+        { ic: "id", label: s.infoId, val: info && info.id ? num(info.id) : dash },
+        { ic: "college", label: s.infoCollege, val: s.collegeName },
+        { ic: "major", label: s.infoMajor, val: trackName(state.track) },
+        { ic: "term", label: s.infoTerm, val: s.currentTerm },
+        { ic: "units", label: s.infoUnits, val: num(done) + " / " + num(total), cls: "units" }
+      ];
+      grid.textContent = "";
+      cells.forEach((c) => {
+        const cell = document.createElement("div"); cell.className = "info-cell";
+        const lbl = document.createElement("div"); lbl.className = "lbl";
+        lbl.innerHTML = infoIcon(c.ic);
+        lbl.appendChild(document.createTextNode(" " + c.label));
+        const val = document.createElement("div");
+        val.className = "val" + (c.cls ? " " + c.cls : "");
+        val.textContent = c.val;
+        cell.appendChild(lbl); cell.appendChild(val); grid.appendChild(cell);
+      });
+    }
+
+    function toArabicDigits(n) {
+      return String(n).replace(/[0-9]/g, (d) => "٠١٢٣٤٥٦٧٨٩"[+d]);
     }
 
     function courseTitle(c) { return state.lang === "ar" ? c.title_ar : c.title_en; }
@@ -2444,6 +3063,187 @@
         if (res.ok && !data.error) state.nudges = data.nudges || [];
       } catch (_err) { /* keep last good nudges */ }
       renderNudges();
+    }
+
+    // ---- Saved plan versions --------------------------------------------------
+    // Plans live server-side, scoped to a free-text handle (name/ID; no login).
+    // The handle itself is remembered in localStorage purely to prefill the
+    // field — the plan data is never stored in the browser.
+    function setSavedStatus(msg, kind) {
+      const el = $("savedStatus");
+      if (!el) return;
+      el.textContent = msg || "";
+      el.className = "saved-status" + (kind ? " " + kind : "");
+    }
+
+    async function refreshSavedPlans() {
+      const handle = state.handle.trim();
+      if (!handle) { state.savedPlans = []; renderSavedPlans(); return; }
+      try {
+        const res = await fetch("/plans/list", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ handle })
+        });
+        const data = await res.json();
+        if (res.ok && !data.error) state.savedPlans = data.plans || [];
+      } catch (_err) { /* keep last good list */ }
+      renderSavedPlans();
+    }
+
+    function renderSavedPlans() {
+      const s = t();
+      const wrap = $("savedList");
+      if (!wrap) return;
+      wrap.textContent = "";
+      if (!state.handle.trim()) {
+        const p = document.createElement("p");
+        p.className = "saved-empty";
+        p.textContent = s.savedNeedHandle;
+        wrap.appendChild(p);
+        return;
+      }
+      if (!state.savedPlans.length) {
+        const p = document.createElement("p");
+        p.className = "saved-empty";
+        p.textContent = s.savedEmpty;
+        wrap.appendChild(p);
+        return;
+      }
+      state.savedPlans.forEach((p) => wrap.appendChild(makeSavedItem(p)));
+    }
+
+    function makeSavedItem(p) {
+      const s = t();
+      const item = document.createElement("div");
+      item.className = "saved-item";
+
+      const main = document.createElement("div");
+      main.className = "saved-item-main";
+      const nm = document.createElement("div");
+      nm.className = "saved-item-name";
+      nm.textContent = p.name;
+      const meta = document.createElement("div");
+      meta.className = "saved-item-meta";
+      const grad = state.lang === "ar" ? p.projected_grad_ar : p.projected_grad;
+      meta.textContent = trackName(p.track) + " · " +
+        (grad ? s.savedMeta(grad, p.projected_terms) : s.savedComplete);
+      main.appendChild(nm);
+      main.appendChild(meta);
+
+      const actions = document.createElement("div");
+      actions.className = "saved-item-actions";
+      const load = document.createElement("button");
+      load.type = "button"; load.className = "saved-btn";
+      load.textContent = s.loadBtn;
+      load.addEventListener("click", () => loadSavedPlan(p));
+      const rn = document.createElement("button");
+      rn.type = "button"; rn.className = "saved-btn";
+      rn.textContent = s.renameBtn;
+      rn.addEventListener("click", () => renameSavedPlan(p));
+      const del = document.createElement("button");
+      del.type = "button"; del.className = "saved-btn danger";
+      del.textContent = s.deleteBtn;
+      del.addEventListener("click", () => deleteSavedPlan(p));
+      actions.appendChild(load);
+      actions.appendChild(rn);
+      actions.appendChild(del);
+
+      item.appendChild(main);
+      item.appendChild(actions);
+      return item;
+    }
+
+    async function saveCurrentPlan() {
+      const s = t();
+      const handle = state.handle.trim();
+      if (!handle) { setSavedStatus(s.savedNeedHandle, "err"); $("handleInput").focus(); return; }
+      const nameInput = $("planNameInput");
+      const name = nameInput.value.trim();
+      if (!name) { setSavedStatus(s.savedNeedName, "err"); nameInput.focus(); return; }
+      try {
+        const res = await fetch("/plans/save", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            handle, name,
+            completed: Array.from(state.completed),
+            completed_credits: state.completedCredits,
+            track: state.track,
+            max_credits_per_term: state.whatifCap,
+            include_summer: state.whatifSummer,
+            defer: Array.from(state.whatifDefer)
+          })
+        });
+        const data = await res.json();
+        if (!res.ok || data.error) { setSavedStatus(data.error || s.savedError, "err"); return; }
+        nameInput.value = "";
+        setSavedStatus(s.savedSaved(name), "ok");
+        await refreshSavedPlans();
+      } catch (_err) { setSavedStatus(s.savedError, "err"); }
+    }
+
+    async function loadSavedPlan(p) {
+      const s = t();
+      if (state.completed.size > 0 && !confirm(s.savedLoadConfirm)) return;
+      try {
+        const res = await fetch("/plans/load", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ handle: state.handle.trim(), plan_id: p.plan_id })
+        });
+        const data = await res.json();
+        if (!res.ok || data.error || !data.plan) { setSavedStatus(data.error || s.savedError, "err"); return; }
+        const pl = data.plan.payload || {};
+        // Restore the working record + simulator knobs from the saved inputs.
+        state.completed = new Set((pl.completed || []).map(normalizeCode));
+        state.completedCredits = (pl.completed_credits === undefined ? null : pl.completed_credits);
+        if (pl.track && state.degreePlans[pl.track]) state.track = pl.track;
+        state.whatifCap = pl.max_credits_per_term || 15;
+        state.whatifSummer = !!pl.include_summer;
+        state.whatifDefer = new Set(pl.defer || []);
+        $("whatifResult").hidden = true;   // stale delta no longer applies
+        setSavedStatus(s.savedLoaded(data.plan.name), "ok");
+        state.view = "roadmap";
+        applyView();
+        renderTrackToggle();
+        renderChips();
+        renderProgress();
+        refreshPlan();   // recompute /plan + /roadmap + /nudges and repaint
+      } catch (_err) { setSavedStatus(s.savedError, "err"); }
+    }
+
+    async function renameSavedPlan(p) {
+      const s = t();
+      const name = (prompt(s.savedRenamePrompt, p.name) || "").trim();
+      if (!name || name === p.name) return;
+      try {
+        const res = await fetch("/plans/rename", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ handle: state.handle.trim(), plan_id: p.plan_id, name })
+        });
+        const data = await res.json();
+        if (!res.ok || data.error) { setSavedStatus(data.error || s.savedError, "err"); return; }
+        setSavedStatus(s.savedRenamed, "ok");
+        await refreshSavedPlans();
+      } catch (_err) { setSavedStatus(s.savedError, "err"); }
+    }
+
+    async function deleteSavedPlan(p) {
+      const s = t();
+      if (!confirm(s.savedDeleteConfirm(p.name))) return;
+      try {
+        const res = await fetch("/plans/delete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ handle: state.handle.trim(), plan_id: p.plan_id })
+        });
+        const data = await res.json();
+        if (!res.ok || data.error) { setSavedStatus(data.error || s.savedError, "err"); return; }
+        setSavedStatus(s.savedDeleted(p.name), "ok");
+        await refreshSavedPlans();
+      } catch (_err) { setSavedStatus(s.savedError, "err"); }
     }
 
     function renderRoadmap() {
@@ -3439,16 +4239,29 @@
       }
     }
 
+    // The catalog's demo records carry no Arabic name / university ID, so the
+    // info panel gets a small display identity here (keyed by student id).
+    const DEMO_IDENTITY = {
+      demo_real: { ar: "سلطان القحطاني", en: "Sultan Al-Qahtani", id: "445102056" },
+      demo_early: { ar: "عبدالله الحربي", en: "Abdullah Al-Harbi", id: "446100377" }
+    };
+    function studentIdentity(key, demo) {
+      const d = DEMO_IDENTITY[key];
+      if (d) return { name: state.lang === "ar" ? d.ar : d.en, id: d.id };
+      return { name: demo && demo.name ? demo.name : (state.lang === "ar" ? "الطالب" : "Student"), id: null };
+    }
+
     function loadDemo() {
       // Prefer a demo whose track matches the current selection, else the first.
       const ids = Object.keys(state.students);
-      let demo = ids.map((id) => state.students[id]).find((d) => d.track === state.track)
-        || (ids.length ? state.students[ids[0]] : null);
+      const chosenId = ids.find((id) => state.students[id].track === state.track) || ids[0];
+      const demo = chosenId ? state.students[chosenId] : null;
       if (!demo) return;
       if (demo.track && state.tracks.includes(demo.track)) state.track = demo.track;
       state.completed = new Set(demo.completed.map(normalizeCode));
       state.completedCredits = (typeof demo.completed_credits === "number")
         ? demo.completed_credits : null;
+      state.studentInfo = studentIdentity(chosenId, demo);
       resetWhatif();
       renderTrackToggle(); refreshPlan();
     }
@@ -3464,21 +4277,45 @@
     function clearCompleted() {
       state.completed.clear();
       state.completedCredits = null;
+      state.studentInfo = null;
       parsedReview = null; $("review").hidden = true;
       resetWhatif();
       refreshPlan();
+    }
+
+    // Header font-size control ("حجم الخط") — scales the root font, persisted.
+    function setFontScale(scale) {
+      state.fontScale = Math.min(1.25, Math.max(0.9, Math.round(scale * 100) / 100));
+      document.documentElement.style.fontSize = (state.fontScale * 100) + "%";
+      try { localStorage.setItem("sanad_fontscale", String(state.fontScale)); } catch (_e) { /* ignore */ }
+    }
+
+    // Logout ("خروج") — drops the loaded record and returns to the home view.
+    function logout() {
+      clearCompleted();
+      state.view = "home";
+      applyView();
     }
 
     // ---- Boot -----------------------------------------------------------------
     async function init() {
       $("langEn").addEventListener("click", () => { state.lang = "en"; applyLang(); });
       $("langAr").addEventListener("click", () => { state.lang = "ar"; applyLang(); });
-      $("tabPlan").addEventListener("click", () => { state.view = "plan"; applyView(); });
-      $("tabRoadmap").addEventListener("click", () => { state.view = "roadmap"; applyView(); });
-      $("tabAdvisor").addEventListener("click", () => { state.view = "advisor"; applyView(); });
+      // Every nav item, hero CTA, and feature card carries data-view — wire them all at once.
+      document.querySelectorAll("[data-view]").forEach((el) => {
+        el.addEventListener("click", () => { state.view = el.getAttribute("data-view"); applyView(); });
+      });
+      $("majorSelect").addEventListener("change", (e) => onMajorChange(e.target.value));
       $("nudgeBell").addEventListener("click", toggleNudgeTray);
       $("nudgeClose").addEventListener("click", closeNudgeTray);
       $("nudgeBackdrop").addEventListener("click", closeNudgeTray);
+      $("logoutBtn").addEventListener("click", logout);
+      $("fsUp").addEventListener("click", () => setFontScale(state.fontScale + 0.05));
+      $("fsDown").addEventListener("click", () => setFontScale(state.fontScale - 0.05));
+      try {
+        const savedFs = parseFloat(localStorage.getItem("sanad_fontscale"));
+        if (savedFs) setFontScale(savedFs);
+      } catch (_e) { /* ignore */ }
       $("courseInfoClose").addEventListener("click", closeCourseInfo);
       $("courseInfoBackdrop").addEventListener("click", closeCourseInfo);
       document.addEventListener("keydown", (e) => {
@@ -3492,6 +4329,19 @@
       $("summerToggle").addEventListener("change", (e) => {
         state.whatifSummer = e.target.checked;
         runWhatif();
+      });
+      // Saved plans: prefill the handle from localStorage (convenience only —
+      // the plans themselves live server-side), then keep the list in sync.
+      try { state.handle = localStorage.getItem("sanad_handle") || ""; } catch (_e) { /* private mode */ }
+      $("handleInput").value = state.handle;
+      $("handleInput").addEventListener("input", (e) => {
+        state.handle = e.target.value;
+        try { localStorage.setItem("sanad_handle", state.handle.trim()); } catch (_e) { /* ignore */ }
+        refreshSavedPlans();
+      });
+      $("savePlanBtn").addEventListener("click", saveCurrentPlan);
+      $("planNameInput").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") { e.preventDefault(); saveCurrentPlan(); }
       });
       $("courseSearch").addEventListener("input", (e) => renderSearchResults(e.target.value));
       $("courseSearch").addEventListener("keydown", onSearchKeydown);
@@ -3519,6 +4369,7 @@
         state.catalog.forEach((c) => { state.byCode[c.code] = c; });
         const program = data.program || {};
         state.totalRequired = program.total_credits_required || 128;
+        state.trackTotals = program.track_total_credits || {};
         state.tracks = program.tracks || Object.keys(state.degreePlans);
         state.track = state.tracks[0] || "general";
         // Track names come from the program record. Arabic is authoritative;
@@ -3529,9 +4380,19 @@
       } catch (err) {
         addMessage("error", "Failed to load catalog: " + err.message);
       }
+      // Optional deep-link: ?lang=ar&view=plan&major=software_engineering
+      try {
+        const q = new URLSearchParams(location.search);
+        if (q.get("lang") === "ar" || q.get("lang") === "en") state.lang = q.get("lang");
+        const v = q.get("view");
+        if (["home", "plan", "roadmap", "advisor"].includes(v)) state.view = v;
+        const m = q.get("major");
+        if (m && state.tracks.includes(m)) state.track = m;
+      } catch (_e) { /* ignore malformed query */ }
       applyView();
       applyLang();
       refreshPlan();     // fetch engine-computed grid state for the initial (empty) plan
+      refreshSavedPlans();   // load this handle's saved plans (if a handle is remembered)
     }
 
     init();
