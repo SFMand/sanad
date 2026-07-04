@@ -91,7 +91,8 @@ def parse_transcript(pdf_path: str) -> dict:
                 credits += cr
                 details.append({"code": code, "credits": cr, "grade": grade, "title": title})
         elif grade in IN_PROGRESS:
-            in_progress.append(code)
+            if code not in in_progress:      # dedupe (e.g. failed-then-retaken)
+                in_progress.append(code)
 
     return {
         "completed": passed,
