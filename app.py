@@ -375,18 +375,61 @@ def build_plan_view(completed, credits, track):
 # place a course before its prerequisites — the engine stays the source of truth.
 # ===========================================================================
 
-# Term/registration calendar — demo constants (no external calendar service).
-# Two planning terms per academic year: Fall, then Spring of the next year.
-START_YEAR = 2026
-DEFAULT_TERM_CREDITS = 15                 # typical full-time load
-REGISTRATION_OPEN_DATE = datetime.date(2026, 8, 10)
+# KSU CCIS academic calendar — demo constants (no external calendar service).
+# KSU runs two main semesters per academic year: the First Semester (الفصل
+# الأول, autumn) and the Second Semester (الفصل الثاني, spring), plus an optional
+# short Summer term (الفصل الصيفي) that many CCIS students use to accelerate.
+# Terms are named by academic year (e.g. "First Semester 2026/27"), matching how
+# KSU CCIS students refer to them — not by Western "Fall/Spring".
+START_YEAR = 2026                          # academic year in which term 0 begins
+# KSU credit-load limits (credit hours / ساعات معتمدة): a regular full-time load
+# is 12–18; 19–21 needs excellent standing + advisor approval; the Summer term is
+# short (capped lower). Below 12 affects full-time status.
+DEFAULT_TERM_CREDITS = 15                  # KSU regular full-time load
+MIN_TERM_CREDITS = 12
+MAX_TERM_CREDITS = 21
+SUMMER_TERM_CREDITS = 7                    # short KSU summer term
+REGISTRATION_OPEN_DATE = datetime.date(2026, 8, 10)   # ~First-Semester registration
+
+_SEM_EN = {"first": "First Semester", "second": "Second Semester"}
+_SEM_AR = {"first": "الفصل الأول", "second": "الفصل الثاني"}
 
 
-def term_label(idx, lang="en"):
-    """Season+year label for the idx-th planned term (0 = next term = Fall 2026)."""
-    season = (["خريف", "ربيع"] if lang == "ar" else ["Fall", "Spring"])[idx % 2]
-    year = START_YEAR + (idx + 1) // 2     # Fall 2026, Spring 2027, Fall 2027, ...
-    return f"{season} {year}"
+def _term_slots(include_summer, n):
+    """First `n` KSU term slots as (kind, academic_year_start). Two main semesters
+    per academic year (first, second) plus an optional short summer term."""
+    pattern = ["first", "second", "summer"] if include_summer else ["first", "second"]
+    return [(pattern[i % len(pattern)], START_YEAR + i // len(pattern)) for i in range(n)]
+
+
+_KIND_ORDER = {"first": 0, "second": 1, "summer": 2}
+
+
+def _term_rank(kind, ay):
+    """A monotonic calendar position for a term, so graduations in different
+    scenarios (with/without summer) can be compared chronologically."""
+    return ay * 3 + _KIND_ORDER[kind]
+
+
+def _slot_label(kind, ay, lang="en"):
+    """KSU-style label, e.g. 'First Semester 2026/27' / 'الفصل الأول 2026/27',
+    'Summer 2027' / 'الفصل الصيفي 2027' (summer of AY ay falls in calendar ay+1)."""
+    if kind == "summer":
+        return f"الفصل الصيفي {ay + 1}" if lang == "ar" else f"Summer {ay + 1}"
+    name = (_SEM_AR if lang == "ar" else _SEM_EN)[kind]
+    return f"{name} {ay}/{(ay + 1) % 100:02d}"
+
+
+def _term_cap(kind, max_credits_per_term):
+    """The short summer term carries a lower credit cap than a main semester."""
+    return min(SUMMER_TERM_CREDITS, max_credits_per_term) if kind == "summer" else max_credits_per_term
+
+
+def term_label(idx, lang="en", include_summer=False):
+    """Label for the idx-th planned term (0 = next term). Thin wrapper used by the
+    nudges; defaults to the two-semester (no-summer) KSU sequence."""
+    kind, ay = _term_slots(include_summer, idx + 1)[idx]
+    return _slot_label(kind, ay, lang)
 
 
 def days_until_registration():
@@ -453,12 +496,15 @@ def _gap_option_codes(completed_set, track):
 
 
 def build_roadmap(completed, credits, track,
-                  max_credits_per_term=DEFAULT_TERM_CREDITS, defer=None):
-    """Greedy term-by-term schedule to graduation. Each term only picks from
-    `eligible_now`, prioritising remaining-required gateways, then unmet elective
-    options, packing up to `max_credits_per_term` credits (co-requisites travel
-    together). `defer` pushes the given courses out of the FIRST term only (used
-    by the what-if simulator). Returns the term list + projected graduation."""
+                  max_credits_per_term=DEFAULT_TERM_CREDITS, defer=None,
+                  include_summer=False):
+    """Greedy term-by-term schedule to graduation over the KSU CCIS calendar. Each
+    term only picks from `eligible_now`, prioritising remaining-required gateways,
+    then unmet elective options, packing up to the term's credit cap (co-requisites
+    travel together; the short Summer term uses a lower cap). `defer` pushes the
+    given courses out of the FIRST term only (used by the what-if simulator).
+    `include_summer` interleaves a Summer term after each Second Semester. Returns
+    the term list + projected graduation (labelled in KSU academic-year style)."""
     completed = normalize_completed(completed)
     completed_set = set(completed)
     track = valid_track(track)
@@ -467,13 +513,20 @@ def build_roadmap(completed, credits, track,
     defer_set = set(normalize_completed(defer or []))
     start_credits = credits
 
-    MAX_TERMS = 16
-    terms, stalled = [], False
+    MAX_SLOTS, MAX_TERMS = 24, 16
+    slots = _term_slots(include_summer, MAX_SLOTS)
+    terms, stalled, slot_idx = [], False, 0
     while True:
         rem = [c for c in remaining_required(completed_set, track) if c in COURSES]
         gaps = elective_gaps(completed_set, track)
-        if (not rem and not gaps and credits >= total) or len(terms) >= MAX_TERMS:
+        if (not rem and not gaps and credits >= total):
             break
+        if len(terms) >= MAX_TERMS or slot_idx >= MAX_SLOTS:
+            break
+
+        kind, ay = slots[slot_idx]
+        slot_idx += 1
+        cap = _term_cap(kind, max_credits_per_term)
 
         elig = eligible_now(completed_set, credits, track)
         scores = build_unlock_scores(completed_set, track)
@@ -495,7 +548,7 @@ def build_roadmap(completed, credits, track,
             bundle = [c] + [co for co in COURSES[c]["requirements"]["coreqs"]
                             if co in COURSES and co not in completed_set and co not in chosen_set]
             bcr = sum(COURSES[x]["credits"] for x in bundle)
-            if term_credits + bcr > max_credits_per_term and chosen:
+            if term_credits + bcr > cap and chosen:
                 continue                               # full — leave the rest for later
             for x in bundle:
                 if x not in chosen_set:
@@ -503,15 +556,19 @@ def build_roadmap(completed, credits, track,
                     chosen_set.add(x)
             term_credits += bcr
 
-        if not chosen:                                 # no progress possible (data gap)
-            stalled = True
+        if not chosen:
+            if kind == "summer":
+                continue                               # nothing fits the short summer — skip it
+            stalled = True                             # a main term with no progress = data gap
             break
 
         completed_set.update(chosen_set)
         credits += term_credits
         terms.append({
-            "term_label": term_label(len(terms)),
-            "term_label_ar": term_label(len(terms), "ar"),
+            "term_label": _slot_label(kind, ay, "en"),
+            "term_label_ar": _slot_label(kind, ay, "ar"),
+            "term_kind": kind,
+            "term_ay": ay,
             "term_credits": term_credits,
             "courses": [{**_view(c), "unlock_score": scores.get(c, 0)} for c in chosen],
         })
@@ -528,10 +585,12 @@ def build_roadmap(completed, credits, track,
         "projected_terms": len(terms),
         "projected_grad": terms[-1]["term_label"] if terms else None,
         "projected_grad_ar": terms[-1]["term_label_ar"] if terms else None,
+        "grad_rank": _term_rank(terms[-1]["term_kind"], terms[-1]["term_ay"]) if terms else None,
         "credits_remaining_after": max(0, total - credits),
         "complete": complete,
         "stalled": stalled,
         "max_credits_per_term": max_credits_per_term,
+        "include_summer": include_summer,
     }
 
 
@@ -885,17 +944,31 @@ def whatif():
     track = valid_track(data.get("track", DEFAULT_TRACK))
     credits = resolve_credits(completed, data.get("completed_credits"))
     defer = data.get("defer", [])
+    include_summer = bool(data.get("include_summer", False))
     cap = data.get("max_credits_per_term", DEFAULT_TERM_CREDITS)
     try:
-        cap = max(3, min(21, int(cap)))
+        cap = max(MIN_TERM_CREDITS, min(MAX_TERM_CREDITS, int(cap)))
     except (TypeError, ValueError):
         cap = DEFAULT_TERM_CREDITS
 
     base = build_roadmap(completed, credits, track)
-    new = build_roadmap(completed, credits, track, max_credits_per_term=cap, defer=defer)
+    new = build_roadmap(completed, credits, track, max_credits_per_term=cap,
+                        defer=defer, include_summer=include_summer)
+
+    # Compare graduations CHRONOLOGICALLY (a summer term can move the date earlier
+    # without changing the term count), not just by number of terms.
+    br, nr = base.get("grad_rank"), new.get("grad_rank")
+    if br is None or nr is None or base["projected_grad"] == new["projected_grad"]:
+        direction = "same"
+    elif nr < br:
+        direction = "earlier"
+    else:
+        direction = "later"
+
     return jsonify({
         "base": base,
         "new": new,
+        "direction": direction,
         "delta_terms": new["projected_terms"] - base["projected_terms"],
         "base_grad": base["projected_grad"],
         "new_grad": new["projected_grad"],
@@ -1047,6 +1120,17 @@ def run_selftest():
     check("no term exceeds the credit cap (15)",
           all(t["term_credits"] <= DEFAULT_TERM_CREDITS for t in rm["terms"]),
           f"term credits: {[t['term_credits'] for t in rm['terms']]}")
+
+    check("terms use KSU academic-year naming (First/Second Semester)",
+          rm["terms"][0]["term_label"].startswith("First Semester"),
+          f"first term label: {rm['terms'][0]['term_label']}")
+
+    rm_summer = build_roadmap(comp, cr, "ai", include_summer=True)
+    check("summer roadmap adds a Summer term within its lower cap",
+          any(t["term_kind"] == "summer" for t in rm_summer["terms"]) and
+          all(t["term_credits"] <= (SUMMER_TERM_CREDITS if t["term_kind"] == "summer"
+                                    else DEFAULT_TERM_CREDITS) for t in rm_summer["terms"]),
+          f"kinds/credits: {[(t['term_kind'], t['term_credits']) for t in rm_summer['terms']]}")
 
     bn = build_bottlenecks(comp, cr, "ai")
     check("bottlenecks are ranked by unlock score (desc)",

@@ -144,12 +144,16 @@ sanad's verified record *forward*. All are **deterministic** (pure engine, no AP
 work offline and are safe to demo live.
 
 6. Open **🎓 Roadmap** → a greedy term-by-term schedule to graduation with a **projected graduation
-   date**. Every course is drawn from `eligible_now` for that simulated term, so the plan can never
-   place a course before its prerequisites. Gateway courses carry a **"unlocks N"** badge (how many
-   later required courses depend on them).
-7. In the **what-if simulator** (under the roadmap), drag **credits per term** or tap a course under
-   **"delay a course"** → the **graduation date shifts live** (e.g. overloading to 18–21 credits can
-   pull graduation in a term). Green = sooner, red = later.
+   date**. Terms follow the **KSU CCIS calendar** — **First Semester / Second Semester** (الفصل
+   الأول/الثاني) named by academic year, e.g. *"First Semester 2026/27"*. Every course is drawn from
+   `eligible_now` for that simulated term, so the plan can never place a course before its
+   prerequisites. Gateway courses carry a **"unlocks N"** badge (how many later required courses
+   depend on them).
+7. In the **what-if simulator** (under the roadmap), drag **credits per term** (bounded to KSU's
+   **12–21** load limits, with a note that 19–21 needs excellent standing + advisor approval), tick
+   **"include summer terms"** (the short KSU summer term, capped lower), or tap a course under
+   **"delay a course"** → the **graduation date shifts live** and is compared *chronologically*
+   (green = graduate earlier, red = later). Overloading or using summers can pull graduation in.
 8. Click the header **🔔 bell** → a **"For you"** tray of ranked, personalized nudge cards built
    from the record: registration countdown, "prioritize this gateway", credits-to-graduation,
    elective gaps, a blocked-course unlock path, and a **"Talk to a human advisor"** hand-off with a
@@ -166,7 +170,7 @@ work offline and are safe to demo live.
 | `POST /chat` | Body `{ messages, completed:["عال 212", …], completed_credits, track, lang:"ar"\|"en" }` → builds the system prompt from the same VERIFIED record and returns `{ reply, eligible_codes }` (the `eligible_codes` drive the recommendation cards). |
 | `POST /roadmap` | Body `{ completed, completed_credits, track }` → `{ roadmap:{ terms:[{term_label,term_credits,courses[]}], projected_terms, projected_grad, complete, … }, bottlenecks:[{code,unlock_score,eligible_now}], unlock_scores:{code:N} }`. **Pure engine — no API key.** |
 | `POST /nudges` | Body `{ completed, completed_credits, track, lang }` → `{ nudges:[{type,icon,priority,title,body,action}] }`, ranked, bilingual. **Pure engine.** |
-| `POST /whatif` | Body `{ completed, completed_credits, track, defer:[codes], max_credits_per_term }` → re-simulates the roadmap and returns `{ base, new, delta_terms, base_grad, new_grad }`. **Pure engine.** |
+| `POST /whatif` | Body `{ completed, completed_credits, track, defer:[codes], max_credits_per_term (12–21), include_summer }` → re-simulates the roadmap and returns `{ base, new, direction:"earlier"\|"later"\|"same", base_grad, new_grad }` (`direction` compares graduations chronologically, so a summer term that moves the date earlier is detected even when the term count is unchanged). **Pure engine.** |
 
 ## Adding courses, tracks, and plan entries
 

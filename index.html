@@ -1472,6 +1472,28 @@
       color: var(--accent-ink);
       border-color: var(--accent);
     }
+    .whatif-note {
+      font-size: var(--fs-xs);
+      color: var(--muted);
+      margin: -2px 0 var(--sp-3);
+    }
+    .whatif-summer {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: var(--fs-sm);
+      margin-bottom: var(--sp-3);
+      cursor: pointer;
+    }
+    .whatif-summer input {
+      accent-color: var(--primary);
+      width: 15px;
+      height: 15px;
+    }
+    .term-summer {
+      border-style: dashed;
+      background: linear-gradient(180deg, rgba(245, 166, 35, .06), transparent);
+    }
     .whatif-result {
       margin-top: var(--sp-3);
       padding: var(--sp-3);
@@ -1810,8 +1832,13 @@
           <div class="whatif-controls">
             <label class="whatif-row" for="capRange">
               <span id="capLabel">Credits per term</span>
-              <input type="range" id="capRange" min="9" max="21" step="3" value="15" />
+              <input type="range" id="capRange" min="12" max="21" step="3" value="15" />
               <output id="capOut">15</output>
+            </label>
+            <p class="whatif-note" id="loadNote"></p>
+            <label class="whatif-summer">
+              <input type="checkbox" id="summerToggle" />
+              <span id="summerLabel">Include summer terms</span>
             </label>
             <div class="whatif-defer">
               <span id="deferLabel">Delay a course:</span>
@@ -1906,9 +1933,14 @@
         whatifTitle: "What-if simulator",
         whatifHelp: "See how your choices change your graduation date.",
         capLabel: "Credits per term",
+        summerLabel: "Include summer terms",
+        loadNoteMin: "Minimum full-time load (12 cr).",
+        loadNoteRegular: "Regular full-time load (12–18 cr).",
+        loadNoteOverload: "19–21 cr needs excellent standing + advisor approval.",
         deferLabel: "Delay a course:",
         whatifSame: (term) => `Still graduating ${term} — no change.`,
-        whatifDelta: (base, next, d) => `${base} → ${next}  (${d > 0 ? "+" : ""}${d} term${Math.abs(d) === 1 ? "" : "s"})`,
+        whatifEarlier: (base, next) => `${base} → ${next}  (graduate earlier ✓)`,
+        whatifLater: (base, next) => `${base} → ${next}  (graduate later)`,
         nudgeTrayTitle: "For you",
         nudgeEmpty: "No suggestions right now.",
         nudgeCopied: "Copied ✓",
@@ -1982,9 +2014,14 @@
         whatifTitle: "محاكي «ماذا لو»",
         whatifHelp: "شاهد كيف تغيّر خياراتك موعد تخرجك.",
         capLabel: "ساعات كل فصل",
+        summerLabel: "تضمين الفصول الصيفية",
+        loadNoteMin: "الحد الأدنى للتحميل الكامل (12 ساعة).",
+        loadNoteRegular: "تحميل كامل اعتيادي (12–18 ساعة).",
+        loadNoteOverload: "19–21 ساعة تتطلب تفوقًا وموافقة المرشد.",
         deferLabel: "تأجيل مقرر:",
         whatifSame: (term) => `ما زال التخرج ${term} — لا تغيير.`,
-        whatifDelta: (base, next, d) => `${base} ← ${next}  (${d > 0 ? "+" : ""}${d} فصل)`,
+        whatifEarlier: (base, next) => `${base} ← ${next}  (تخرّج أبكر ✓)`,
+        whatifLater: (base, next) => `${base} ← ${next}  (تخرّج أبعد)`,
         nudgeTrayTitle: "من أجلك",
         nudgeEmpty: "لا توجد اقتراحات الآن.",
         nudgeCopied: "تم النسخ ✓",
@@ -2052,6 +2089,7 @@
       nudges: [],           // latest /nudges response
       whatifCap: 15,        // per-term credit cap for the what-if simulator
       whatifDefer: new Set(),  // codes deferred in the what-if simulator
+      whatifSummer: false,  // include KSU summer terms in the what-if simulation
       messages: []          // {role:'user'|'assistant', content}
     };
 
@@ -2143,6 +2181,7 @@
       $("whatifTitle").textContent = s.whatifTitle;
       $("whatifHelp").textContent = s.whatifHelp;
       $("capLabel").textContent = s.capLabel;
+      $("summerLabel").textContent = s.summerLabel;
       $("deferLabel").textContent = s.deferLabel;
       $("nudgeTrayTitle").textContent = s.nudgeTrayTitle;
       renderRoadmap();
@@ -2332,7 +2371,7 @@
       tl.textContent = "";
       rm.terms.forEach((term) => {
         const col = document.createElement("div");
-        col.className = "term";
+        col.className = "term" + (term.term_kind === "summer" ? " term-summer" : "");
         const head = document.createElement("div");
         head.className = "term-head";
         const label = state.lang === "ar" ? term.term_label_ar : term.term_label;
@@ -2377,8 +2416,12 @@
     }
 
     function renderWhatifControls() {
+      const s = t();
       $("capOut").textContent = String(state.whatifCap);
       $("capRange").value = String(state.whatifCap);
+      $("summerToggle").checked = state.whatifSummer;
+      $("loadNote").textContent = state.whatifCap >= 19 ? s.loadNoteOverload
+        : (state.whatifCap <= 12 ? s.loadNoteMin : s.loadNoteRegular);
       const wrap = $("deferChips");
       wrap.textContent = "";
       const rm = state.roadmap;
@@ -2413,7 +2456,8 @@
             completed_credits: state.completedCredits,
             track: state.track,
             defer: Array.from(state.whatifDefer),
-            max_credits_per_term: state.whatifCap
+            max_credits_per_term: state.whatifCap,
+            include_summer: state.whatifSummer
           })
         });
         const data = await res.json();
@@ -2421,12 +2465,15 @@
         const baseGrad = state.lang === "ar" ? data.base_grad_ar : data.base_grad;
         const newGrad = state.lang === "ar" ? data.new_grad_ar : data.new_grad;
         out.hidden = false;
-        if (data.delta_terms === 0) {
+        if (data.direction === "earlier") {
+          out.className = "whatif-result better";
+          out.textContent = s.whatifEarlier(baseGrad, newGrad);
+        } else if (data.direction === "later") {
+          out.className = "whatif-result worse";
+          out.textContent = s.whatifLater(baseGrad, newGrad);
+        } else {
           out.className = "whatif-result same";
           out.textContent = s.whatifSame(newGrad);
-        } else {
-          out.className = "whatif-result " + (data.delta_terms < 0 ? "better" : "worse");
-          out.textContent = s.whatifDelta(baseGrad, newGrad, data.delta_terms);
         }
       } catch (_err) { out.hidden = true; }
     }
@@ -3256,6 +3303,7 @@
     function resetWhatif() {
       state.whatifCap = 15;
       state.whatifDefer.clear();
+      state.whatifSummer = false;
       const out = $("whatifResult");
       if (out) out.hidden = true;
     }
@@ -3281,6 +3329,10 @@
       $("capRange").addEventListener("input", (e) => {
         state.whatifCap = parseInt(e.target.value, 10) || 15;
         $("capOut").textContent = String(state.whatifCap);
+        runWhatif();
+      });
+      $("summerToggle").addEventListener("change", (e) => {
+        state.whatifSummer = e.target.checked;
         runWhatif();
       });
       $("courseSearch").addEventListener("input", (e) => renderSearchResults(e.target.value));
