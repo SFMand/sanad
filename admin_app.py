@@ -1,11 +1,12 @@
-"""Web UI over db_admin.py's additive authoring operations.
+"""Web UI over db_admin.py's authoring operations.
 
 A small, separate admin tool (not the student-facing app.py) for adding
-courses/tracks/plan-entries/elective-groups/elective-options without
-hand-crafting db_admin.py CLI invocations. Every mutation here calls the
-exact same core function the CLI uses, so there is one code path — this
-file only adapts sqlite3.IntegrityError into a JSON error response instead
-of a CLI SystemExit.
+courses/tracks/plan-entries/elective-groups/elective-options, and for
+editing an existing course's fields, without hand-crafting db_admin.py CLI
+invocations. Every mutation here calls the exact same core function the CLI
+uses, so there is one code path — this file only adapts sqlite3.IntegrityError
+(and, for the course-edit route, KeyError for an unknown code) into a JSON
+error response instead of a CLI SystemExit.
 
 Run:
     python admin_app.py    # serves http://localhost:5050
@@ -90,6 +91,42 @@ def api_add_course():
     except sqlite3.IntegrityError as e:
         return jsonify({"error": str(e)}), 400
     return jsonify({"ok": True, "code": data["code"]})
+
+
+@app.get("/api/courses/<path:code>")
+def api_get_course(code):
+    """Full row for the edit form (list_courses()/api/meta only expose 4 display columns)."""
+    conn = connect()
+    try:
+        row = conn.execute(
+            "SELECT code, code_en, title_ar, title_en, credits, category, min_credits, "
+            "verified, description_en, description_ar FROM courses WHERE code = ?",
+            (code,),
+        ).fetchone()
+    finally:
+        conn.close()
+    if row is None:
+        return jsonify({"error": f"no course with code {code!r}"}), 404
+    return jsonify(dict(row))
+
+
+@app.put("/api/courses/<path:code>")
+def api_update_course(code):
+    data = request.get_json(force=True, silent=True) or {}
+    try:
+        db_admin.update_course(
+            code,
+            code_en=data.get("code_en"), title_ar=data.get("title_ar"),
+            title_en=data.get("title_en"), credits=data.get("credits"),
+            category=data.get("category"), min_credits=data.get("min_credits"),
+            verified=(None if "verified" not in data else (1 if data["verified"] else 0)),
+            description_en=data.get("description_en"), description_ar=data.get("description_ar"),
+        )
+    except KeyError as e:
+        return jsonify({"error": e.args[0]}), 404
+    except sqlite3.IntegrityError as e:
+        return jsonify({"error": str(e)}), 400
+    return jsonify({"ok": True, "code": code})
 
 
 @app.post("/api/tracks")

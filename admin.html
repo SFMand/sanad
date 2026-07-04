@@ -601,7 +601,7 @@
       <span class="brand-mark" aria-hidden="true" id="brandMark"></span>
       <div class="brand-text">
         <h1>Course Planner Admin</h1>
-        <p>Additive authoring UI over db_admin.py — course_planner.db</p>
+        <p>Authoring UI over db_admin.py — course_planner.db (courses are editable; other entities remain additive-only)</p>
       </div>
     </div>
   </header>
@@ -610,6 +610,7 @@
     <div class="seg-toggle admin-tabs" id="adminTabs" role="tablist" aria-label="Admin section">
       <button data-tab="courses" aria-pressed="true">Courses</button>
       <button data-tab="course">Add Course</button>
+      <button data-tab="edit">Edit Course</button>
       <button data-tab="track">Add Track</button>
       <button data-tab="planEntry">Plan Entry</button>
       <button data-tab="electiveGroup">Elective Group</button>
@@ -638,6 +639,7 @@
               <th>Code (EN)</th>
               <th>Title (EN)</th>
               <th>Credits</th>
+              <th></th>
             </tr>
           </thead>
           <tbody id="coursesBody"></tbody>
@@ -705,6 +707,61 @@
         </div>
         <div class="form-actions">
           <button class="btn primary" type="submit">Add course</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- ---------- Edit course ---------- -->
+    <section class="panel tabpanel" id="tab-edit" role="tabpanel">
+      <div class="panel-head">
+        <h2>Edit course</h2>
+        <p>Edit an existing course's fields. Prerequisites/co-requisites and the code itself are not editable here — use the CLI (db_admin.py) or a database tool for those, or delete and re-add the course.</p>
+      </div>
+      <form class="form-body" id="editCourseForm">
+        <div class="form-grid">
+          <div class="field">
+            <label for="eCode">Code (Arabic, canonical)</label>
+            <input id="eCode" type="text" readonly />
+          </div>
+          <div class="field">
+            <label for="eCodeEn">Code (English)</label>
+            <input id="eCodeEn" type="text" required />
+          </div>
+          <div class="field">
+            <label for="eTitleAr">Title (Arabic)</label>
+            <input id="eTitleAr" type="text" required />
+          </div>
+          <div class="field">
+            <label for="eTitleEn">Title (English)</label>
+            <input id="eTitleEn" type="text" required />
+          </div>
+          <div class="field">
+            <label for="eCredits">Credits</label>
+            <input id="eCredits" type="number" min="0" required />
+          </div>
+          <div class="field">
+            <label for="eCategory">Category</label>
+            <input id="eCategory" type="text" list="categoryList" required />
+          </div>
+          <div class="field">
+            <label for="eMinCredits">Minimum credits required</label>
+            <input id="eMinCredits" type="number" min="0" value="0" />
+          </div>
+          <div class="field checkbox-field">
+            <input id="eVerified" type="checkbox" />
+            <label for="eVerified">Verified</label>
+          </div>
+          <div class="field span2">
+            <label for="eDescriptionEn">Description (English)</label>
+            <textarea id="eDescriptionEn" rows="3"></textarea>
+          </div>
+          <div class="field span2">
+            <label for="eDescriptionAr">Description (Arabic)</label>
+            <textarea id="eDescriptionAr" rows="3"></textarea>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn primary" type="submit">Save changes</button>
         </div>
       </form>
     </section>
@@ -855,7 +912,7 @@
   </main>
 
   <footer>
-    Additive operations only — this does not edit or delete existing rows. Changes take effect immediately on course_planner.db.
+    Courses can be edited (all fields except the code, prerequisites, and co-requisites). Tracks, plan entries, and elective groups/options remain additive only — nothing there is edited or deleted. Changes take effect immediately on course_planner.db.
   </footer>
 
   <datalist id="courseCodeList"></datalist>
@@ -883,7 +940,7 @@
     let coreqs = [];
 
     // ---- Tabs ----------------------------------------------------------------
-    const TABS = ["courses", "course", "track", "planEntry", "electiveGroup", "electiveOption", "check"];
+    const TABS = ["courses", "course", "edit", "track", "planEntry", "electiveGroup", "electiveOption", "check"];
     function setTab(name) {
       TABS.forEach((t) => {
         $("tab-" + t).classList.toggle("active", t === name);
@@ -961,18 +1018,23 @@
       body.innerHTML = "";
       rows.forEach((r) => {
         const tr = document.createElement("tr");
-        tr.innerHTML = `<td>${r.code}</td><td>${r.code_en}</td><td>${r.title_en}</td><td>${r.credits}</td>`;
+        tr.innerHTML = `<td>${r.code}</td><td>${r.code_en}</td><td>${r.title_en}</td><td>${r.credits}</td>` +
+          `<td><button class="btn ghost btn-edit" data-code="${r.code}">Edit</button></td>`;
         body.appendChild(tr);
       });
       $("coursesCount").textContent = `${rows.length} course(s).`;
     }
     $("coursesTrackFilter").addEventListener("change", renderCoursesTable);
     $("coursesRefresh").addEventListener("click", renderCoursesTable);
+    $("coursesBody").addEventListener("click", (e) => {
+      const btn = e.target.closest(".btn-edit");
+      if (btn) openEditCourse(btn.dataset.code);
+    });
 
-    // ---- Generic POST helper ------------------------------------------------
-    async function postJSON(url, body) {
+    // ---- Generic request helper ---------------------------------------------
+    async function requestJSON(url, body, method = "POST") {
       const res = await fetch(url, {
-        method: "POST",
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
@@ -982,6 +1044,54 @@
       }
       return data;
     }
+    async function postJSON(url, body) {
+      return requestJSON(url, body, "POST");
+    }
+
+    // ---- Edit course ---------------------------------------------------------
+    async function openEditCourse(code) {
+      try {
+        const res = await fetch(`/api/courses/${encodeURIComponent(code)}`);
+        const c = await res.json();
+        if (!res.ok || c.error) throw new Error(c.error || `HTTP ${res.status}`);
+        $("eCode").value = c.code;
+        $("eCodeEn").value = c.code_en;
+        $("eTitleAr").value = c.title_ar;
+        $("eTitleEn").value = c.title_en;
+        $("eCredits").value = c.credits;
+        $("eCategory").value = c.category;
+        $("eMinCredits").value = c.min_credits;
+        $("eVerified").checked = !!c.verified;
+        $("eDescriptionEn").value = c.description_en;
+        $("eDescriptionAr").value = c.description_ar;
+        setTab("edit");
+      } catch (err) {
+        logEvent(false, `Load course failed: ${err.message}`);
+      }
+    }
+
+    $("editCourseForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const code = $("eCode").value;
+      try {
+        await requestJSON(`/api/courses/${encodeURIComponent(code)}`, {
+          code_en: $("eCodeEn").value.trim(),
+          title_ar: $("eTitleAr").value.trim(),
+          title_en: $("eTitleEn").value.trim(),
+          credits: Number($("eCredits").value),
+          category: $("eCategory").value.trim(),
+          min_credits: Number($("eMinCredits").value || 0),
+          verified: $("eVerified").checked,
+          description_en: $("eDescriptionEn").value.trim(),
+          description_ar: $("eDescriptionAr").value.trim(),
+        }, "PUT");
+        logEvent(true, `Updated course ${code}.`);
+        await renderCoursesTable();
+        setTab("courses");
+      } catch (err) {
+        logEvent(false, `Update course failed: ${err.message}`);
+      }
+    });
 
     // ---- Prereq / coreq chip builders ---------------------------------------
     function renderChips(container, list, onRemove) {

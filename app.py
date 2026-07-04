@@ -102,17 +102,6 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 from data_layer import load_data_from_db
 
-DB = load_data_from_db()
-PROGRAM = DB["program"]
-COURSES = {c["code"]: c for c in DB["courses"]}      # Arabic code -> course
-STUDENTS = DB.get("students", {})                    # id -> student
-TOTAL_REQUIRED = PROGRAM["total_credits_required"]  # program-global fallback
-TRACK_TOTALS = PROGRAM.get("track_total_credits", {})
-TRACKS = PROGRAM["tracks"]
-DEFAULT_TRACK = TRACKS[0]
-TRACK_NAMES_AR = PROGRAM.get("track_names_ar", {})
-
-
 def total_for(track):
     """Graduation credit total for a track (majors differ: CS=128, CE=160)."""
     return TRACK_TOTALS.get(track) or TOTAL_REQUIRED
@@ -127,8 +116,28 @@ def _norm_en(s):
     return re.sub(r"\s+", " ", s)
 
 
-# English-code lookup so a student can paste either the Arabic or the English code.
-BY_CODE_EN = {_norm_en(c["code_en"]): c["code"] for c in DB["courses"]}
+def _load_data():
+    """(Re)load course_planner.db into module globals. Registered as a Flask
+    before_request hook so admin-authored edits (courses/tracks/plan entries),
+    made by the separate admin_app.py process against the same SQLite file,
+    become visible here without a restart — a full reload is cheap at this
+    catalog's size (~90 courses)."""
+    global DB, PROGRAM, COURSES, STUDENTS, TOTAL_REQUIRED, TRACK_TOTALS
+    global TRACKS, DEFAULT_TRACK, TRACK_NAMES_AR, BY_CODE_EN
+    DB = load_data_from_db()
+    PROGRAM = DB["program"]
+    COURSES = {c["code"]: c for c in DB["courses"]}      # Arabic code -> course
+    STUDENTS = DB.get("students", {})                    # id -> student
+    TOTAL_REQUIRED = PROGRAM["total_credits_required"]  # program-global fallback
+    TRACK_TOTALS = PROGRAM.get("track_total_credits", {})
+    TRACKS = PROGRAM["tracks"]
+    DEFAULT_TRACK = TRACKS[0]
+    TRACK_NAMES_AR = PROGRAM.get("track_names_ar", {})
+    # English-code lookup so a student can paste either the Arabic or the English code.
+    BY_CODE_EN = {_norm_en(c["code_en"]): c["code"] for c in DB["courses"]}
+
+
+_load_data()
 
 
 def to_canonical(raw):
@@ -265,6 +274,8 @@ def _view(code):
         "title_ar": c["title_ar"],
         "credits": c["credits"],
         "verified": c["verified"],
+        "description_en": c["description_en"],
+        "description_ar": c["description_ar"],
     }
 
 
@@ -855,6 +866,7 @@ def resolve_credits(completed, completed_credits):
 # Flask app
 # ---------------------------------------------------------------------------
 app = Flask(__name__)
+app.before_request(_load_data)
 
 
 @app.get("/")

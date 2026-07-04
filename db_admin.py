@@ -1,8 +1,11 @@
 """Safe authoring operations for course_planner.db — usable both as a CLI and
 as a library (see admin_app.py, the web UI over these same functions).
 
-Additive operations only (this is for adding a new major/track's data,
-not editing existing rows). Every mutating function runs through a
+Mostly-additive (this is for adding a new major/track's data). `update_course`
+is the one exception: it supports full-field editing of an existing course
+(title, credits, category, min_credits, verified, description) — everything
+else (tracks, plan entries, elective groups/options, and a course's
+prereqs/coreqs) remains additive only. Every mutating function runs through a
 connection with `PRAGMA foreign_keys = ON`, so a typo'd course code in
 a prereq/coreq/course/course_code argument fails loudly with an
 IntegrityError instead of silently producing a permanently-locked
@@ -22,6 +25,9 @@ CLI examples:
         --name-en "CE Electives" --name-ar "..." --choose-credits 6
 
     python db_admin.py add-elective-option --group-id 12 --course "هعم 101" --position 0
+
+    python db_admin.py update-course --code "عال 212" --description-en "..." \\
+        --description-ar "..."
 
     python db_admin.py list-courses [--track computer_engineering]
     python db_admin.py check
@@ -59,6 +65,41 @@ def add_course(code, code_en, title_ar, title_en, credits, category,
                 "INSERT INTO course_coreqs (course_code, coreq_code) VALUES (?, ?)",
                 (code, coreq),
             )
+        conn.commit()
+    except sqlite3.IntegrityError:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+def update_course(code, code_en=None, title_ar=None, title_en=None, credits=None,
+                   category=None, min_credits=None, verified=None,
+                   description_en=None, description_ar=None):
+    """Update editable fields on an existing course. Only fields explicitly
+    passed (non-None) are written, so a partial call can't clobber the rest
+    of the row with NULLs. Raises KeyError if `code` doesn't exist (checked
+    explicitly, since an UPDATE ... WHERE that matches zero rows otherwise
+    succeeds silently)."""
+    fields = {k: v for k, v in {
+        "code_en": code_en, "title_ar": title_ar, "title_en": title_en,
+        "credits": credits, "category": category, "min_credits": min_credits,
+        "verified": verified, "description_en": description_en,
+        "description_ar": description_ar,
+    }.items() if v is not None}
+    if not fields:
+        return
+    conn = connect()
+    try:
+        conn.execute("BEGIN")
+        if conn.execute("SELECT 1 FROM courses WHERE code = ?", (code,)).fetchone() is None:
+            conn.rollback()
+            raise KeyError(f"no course with code {code!r}")
+        set_clause = ", ".join(f"{k} = ?" for k in fields)
+        conn.execute(
+            f"UPDATE courses SET {set_clause} WHERE code = ?",
+            (*fields.values(), code),
+        )
         conn.commit()
     except sqlite3.IntegrityError:
         conn.rollback()
@@ -175,6 +216,21 @@ def _cli_add_course(args):
     print(f"Added course {args.code}.")
 
 
+def _cli_update_course(args):
+    try:
+        update_course(
+            args.code, code_en=args.code_en, title_ar=args.title_ar, title_en=args.title_en,
+            credits=args.credits, category=args.category, min_credits=args.min_credits,
+            verified=args.verified, description_en=args.description_en,
+            description_ar=args.description_ar,
+        )
+    except KeyError as e:
+        raise SystemExit(f"Rejected: {e}") from e
+    except sqlite3.IntegrityError as e:
+        raise SystemExit(f"Rejected: {e}") from e
+    print(f"Updated course {args.code}.")
+
+
 def _cli_add_track(args):
     try:
         add_track(args.code, args.name_ar, args.position, args.total_credits, args.name_en)
@@ -241,6 +297,19 @@ def main():
     p.add_argument("--coreq", action="append", metavar="CODE", help="repeatable")
     p.add_argument("--unverified", action="store_true")
     p.set_defaults(func=_cli_add_course)
+
+    p = sub.add_parser("update-course", help="edit fields on an existing course")
+    p.add_argument("--code", required=True, help="canonical Arabic code of the course to edit")
+    p.add_argument("--code-en")
+    p.add_argument("--title-ar")
+    p.add_argument("--title-en")
+    p.add_argument("--credits", type=int)
+    p.add_argument("--category")
+    p.add_argument("--min-credits", type=int)
+    p.add_argument("--verified", type=int, choices=[0, 1], help="omit to leave unchanged")
+    p.add_argument("--description-en")
+    p.add_argument("--description-ar")
+    p.set_defaults(func=_cli_update_course)
 
     p = sub.add_parser("add-track", help="add a new track/major")
     p.add_argument("--code", required=True)
